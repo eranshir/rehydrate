@@ -107,6 +107,7 @@ iCloud handles **Mail, Notes, Photos, Safari, Keychain, Contacts, Calendar, Remi
 - **[INSTALL.md](INSTALL.md)** — three installation paths (marketplace, local clone, skills-only)
 - **[USAGE.md](USAGE.md)** — end-to-end walkthrough: backup, restore, snapshot diff, GC, customisation, fresh-Mac migration
 - **[SECURITY.md](SECURITY.md)** — trust model, plaintext secrets caveat, no-PII logging guarantee
+- **[PRIVACY.md](PRIVACY.md)** — privacy policy (short version: the plugin collects nothing)
 - **[docs/adr/001-architecture.md](docs/adr/001-architecture.md)** — nine architectural decisions and their rationale
 
 ## Project status
