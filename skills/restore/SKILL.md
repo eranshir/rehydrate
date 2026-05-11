@@ -312,7 +312,31 @@ and may require interactive confirmation — the skill does not automate it.
 
 ---
 
-## 9. Post-restore: Refreshing macOS Preferences (`defaults` category)
+## 9. Post-restore: Re-installing Apps (`app-inventory` category)
+
+After restoring the `app-inventory` category, the captured inventory lives at
+`<target>/.rehydrate/apps/inventory.json`. Each entry includes `name`,
+`bundle_id`, `version`, and a `source` hint. Use these to decide how to
+reinstall each app:
+
+- **`source: cask`** — try `brew install --cask <name>`. The `name` field is
+  the `CFBundleName` from the plist; if it does not match a cask exactly, use
+  `bundle_id` to identify the correct formula (e.g.
+  `brew search --casks <bundle_id>`).
+- **`source: appstore`** — the app was purchased via the Mac App Store. Open
+  the App Store and re-download it via Purchased, or use `mas install <apple_id>`
+  if the `mas` CLI is available. The `bundle_id` can identify the app in the
+  App Store.
+- **`source: manual`** — no automated reinstall path. The inventory records the
+  app name for manual download from the vendor's website.
+
+Reinstallation is intentionally user-mediated: it is slow, side-effecting, and
+may require purchases or sign-in. The skill does not automate it. Present the
+inventory as a checklist and let the user or a restore-time LLM work through it.
+
+---
+
+## 10. Post-restore: Refreshing macOS Preferences (`defaults` category)
 
 If the restored snapshot included the `defaults` category, the plist files in
 `~/Library/Preferences/` will have been written to disk, but the macOS preferences

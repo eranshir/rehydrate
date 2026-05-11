@@ -153,10 +153,10 @@ categories:
     iCloud_managed: false
 
   - name: app-inventory
-    enabled: false
+    enabled: true
     strategy: app-list
     description: Installed apps in /Applications and ~/Applications, resolved to cask names where possible
-    iCloud_managed: false  # AppStore apps re-download on restore via iCloud; non-AppStore via cask
+    iCloud_managed: false
 
   - name: dev-projects
     enabled: false

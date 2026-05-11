@@ -7,6 +7,7 @@ allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/probe.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-packages.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-apps.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py *)
   - Bash(ls *)
   - Bash(mkdir *)
@@ -114,7 +115,7 @@ matching walker:
 |---|---|
 | file-list     | scripts/walk.py                                      |
 | package-list  | scripts/walk-packages.py                             |
-| app-list      | (added in #18)                                       |
+| app-list      | scripts/walk-apps.py                                 |
 | repo-list     | (added in #19)                                       |
 | full-snapshot | (added in #20)                                       |
 
@@ -147,10 +148,27 @@ The JSON output's `workdir` field will confirm the path. Pass it as `--home`
 to `snapshot.py` in Step 4 so the virtual paths resolve correctly against the
 workdir rather than `$HOME`.
 
-**strategy: app-list / repo-list / full-snapshot**
+**strategy: app-list**
+
+App walkers write a single inventory file into a dedicated workdir, not into `$HOME`.
+Choose a stable workdir path per category (e.g. under `<SNAPSHOT_DIR>/workdirs/<name>/`):
+
+```bash
+mkdir -p <SNAPSHOT_DIR>/workdirs/<name>
+
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-apps.py \
+  --out <SNAPSHOT_DIR>/walk-<name>.json \
+  --workdir <SNAPSHOT_DIR>/workdirs/<name>
+```
+
+The JSON output's `workdir` field will confirm the path. Pass it as `--home`
+to `snapshot.py` in Step 4 so the virtual paths resolve correctly against the
+workdir rather than `$HOME`.
+
+**strategy: repo-list / full-snapshot**
 
 No walker is implemented yet. Warn the user and skip this category:
-> "Skipping category '<name>' (strategy: <strategy>) — walker not implemented yet (see issue #18/#19/#20)."
+> "Skipping category '<name>' (strategy: <strategy>) — walker not implemented yet (see issue #19/#20)."
 
 #### Verify walk output
 
@@ -173,12 +191,15 @@ python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py \
   --walk-output <SNAPSHOT_DIR>/walk-package-managers.json \
   --category package-managers \
   --home <SNAPSHOT_DIR>/workdirs/package-managers \
+  --walk-output <SNAPSHOT_DIR>/walk-app-inventory.json \
+  --category app-inventory \
+  --home <SNAPSHOT_DIR>/workdirs/app-inventory \
   --probe-output <SNAPSHOT_DIR>/probe.json \
   --drive <drive_path>/llm-backup \
   --snapshot-id <SNAPSHOT_ID>
 ```
 
-(The example above shows `dotfiles` + `package-managers`. Repeat or omit pairs
+(The example above shows `dotfiles` + `package-managers` + `app-inventory`. Repeat or omit pairs
 as determined by which categories are enabled.) If the command exits non-zero,
 stop and report the error.
 
