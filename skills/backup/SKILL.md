@@ -6,6 +6,7 @@ disable-model-invocation: true
 allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/probe.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-packages.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py *)
   - Bash(ls *)
   - Bash(mkdir *)
@@ -103,32 +104,83 @@ Verify `probe.json` was written. If the command exits non-zero, stop and report 
 
 ### Step 3 — Walk enabled categories
 
-For v0.1, only `dotfiles` has `enabled: true` in `categories.yaml`. Walk it:
+#### Strategy dispatch table
+
+Before walking, read `${CLAUDE_SKILL_DIR}/../../categories.yaml`. For each
+category with `enabled: true`, consult its `strategy` field and invoke the
+matching walker:
+
+| strategy      | walker script                                        |
+|---|---|
+| file-list     | scripts/walk.py                                      |
+| package-list  | scripts/walk-packages.py                             |
+| app-list      | (added in #18)                                       |
+| repo-list     | (added in #19)                                       |
+| full-snapshot | (added in #20)                                       |
+
+#### Per-category walk commands
+
+For each enabled category, branch on `strategy`:
+
+**strategy: file-list**
 
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk.py \
-  --category dotfiles \
-  --out <SNAPSHOT_DIR>/walk-dotfiles.json
+  --category <name> \
+  --out <SNAPSHOT_DIR>/walk-<name>.json
 ```
 
-Verify `walk-dotfiles.json` was written. If the command exits non-zero, stop and report the error.
+**strategy: package-list**
 
-If you need to check which categories are enabled before walking, read
+Package walkers write virtual files into a dedicated workdir, not into `$HOME`.
+Choose a stable workdir path per category (e.g. under `<SNAPSHOT_DIR>/workdirs/<name>/`):
+
+```bash
+mkdir -p <SNAPSHOT_DIR>/workdirs/<name>
+
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-packages.py \
+  --out <SNAPSHOT_DIR>/walk-<name>.json \
+  --workdir <SNAPSHOT_DIR>/workdirs/<name>
+```
+
+The JSON output's `workdir` field will confirm the path. Pass it as `--home`
+to `snapshot.py` in Step 4 so the virtual paths resolve correctly against the
+workdir rather than `$HOME`.
+
+**strategy: app-list / repo-list / full-snapshot**
+
+No walker is implemented yet. Warn the user and skip this category:
+> "Skipping category '<name>' (strategy: <strategy>) — walker not implemented yet (see issue #18/#19/#20)."
+
+#### Verify walk output
+
+After each walker invocation, verify `walk-<name>.json` was written. If the
+command exits non-zero, stop and report the error.
+
+If you need to enumerate enabled categories dynamically, read
 `${CLAUDE_SKILL_DIR}/../../categories.yaml` and walk only those with `enabled: true`.
 
 ### Step 4 — Run snapshot.py
+
+For each enabled category that was walked, pass `--walk-output` and `--category`
+to `snapshot.py`. For `package-list` categories, also pass `--home <workdir>`
+(use the `workdir` from the walk JSON); for all other strategies pass `--home $HOME`.
 
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py \
   --walk-output <SNAPSHOT_DIR>/walk-dotfiles.json \
   --category dotfiles \
+  --walk-output <SNAPSHOT_DIR>/walk-package-managers.json \
+  --category package-managers \
+  --home <SNAPSHOT_DIR>/workdirs/package-managers \
   --probe-output <SNAPSHOT_DIR>/probe.json \
   --drive <drive_path>/llm-backup \
   --snapshot-id <SNAPSHOT_ID>
 ```
 
-Repeat `--walk-output <path> --category <name>` once per enabled category in
-the same order as Step 3. If the command exits non-zero, stop and report the error.
+(The example above shows `dotfiles` + `package-managers`. Repeat or omit pairs
+as determined by which categories are enabled.) If the command exits non-zero,
+stop and report the error.
 
 After this step the following files exist on the drive:
 - `<SNAPSHOT_DIR>/manifest.json` — validated manifest

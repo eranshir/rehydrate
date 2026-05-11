@@ -289,7 +289,30 @@ current state of the target directory, not from a checkpoint file.
 
 ---
 
-## 8. Post-restore: Refreshing macOS Preferences (`defaults` category)
+## 8. Post-restore: Re-installing Packages (`package-managers` category)
+
+After restoring the `package-managers` category, the captured inventory files
+live at `<target>/.rehydrate/packages/`. To re-install packages from these
+inventories, run the appropriate manager command for each file that was
+restored:
+
+```bash
+brew bundle install --file=<target>/.rehydrate/packages/Brewfile
+pip3 install -r <target>/.rehydrate/packages/pip-requirements.txt
+# cargo, gem, etc.:
+#   cargo install $(cat <target>/.rehydrate/packages/cargo-installed.txt | awk '{print $1}')
+#   gem install $(cat <target>/.rehydrate/packages/gem-list.txt | awk '{print $1}')
+```
+
+`npm-globals.json` lists global packages in npm's JSON format; use
+`npm install -g <package>` for each top-level entry. `go-bin.txt` lists Go
+binary names; re-install them with `go install <pkg>@latest` for each entry.
+Manager installation is intentionally user-mediated: it is slow, side-effecting,
+and may require interactive confirmation — the skill does not automate it.
+
+---
+
+## 9. Post-restore: Refreshing macOS Preferences (`defaults` category)
 
 If the restored snapshot included the `defaults` category, the plist files in
 `~/Library/Preferences/` will have been written to disk, but the macOS preferences

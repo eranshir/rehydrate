@@ -140,16 +140,16 @@ categories:
     iCloud_managed: false
 
   - name: package-managers
-    enabled: false
+    enabled: true
     strategy: package-list
     description: Homebrew, npm globals, pip, cargo, go install, gem
     managers:
-      - brew     # brew bundle dump
-      - npm      # npm list -g --depth=0
-      - pip      # pip freeze (system + venvs detected)
-      - cargo    # cargo install --list
-      - go       # parse ~/go/bin
-      - gem      # gem list
+      - brew
+      - npm
+      - pip
+      - cargo
+      - go
+      - gem
     iCloud_managed: false
 
   - name: app-inventory
