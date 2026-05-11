@@ -404,3 +404,12 @@ Scripts are located in `scripts/` within the plugin directory and are invoked by
 | 7 | Plugin (not skill) packaging | Two clean slash commands; per-skill frontmatter; correct extension point |
 | 8 | `disable-model-invocation: true` | No autonomous side effects; always explicit user intent |
 | 9 | Python stdlib-preferred | Pre-installed, auditable, no compile step |
+
+---
+
+## See also
+
+- [README.md](../../README.md) — project overview, quick start, and categories table
+- [INSTALL.md](../../INSTALL.md) — installation paths (marketplace, local clone, skills-only)
+- [USAGE.md](../../USAGE.md) — end-to-end walkthrough (backup, restore, diff, GC, customisation)
+- [SECURITY.md](../../SECURITY.md) — trust model, plaintext secrets caveat, no-PII logging
