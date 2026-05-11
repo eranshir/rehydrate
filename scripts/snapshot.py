@@ -287,7 +287,23 @@ def run_snapshot(
         walk_outputs.append((walk_data, category_name))
 
     # ------------------------------------------------------------------
-    # 4. Ensure objects/ exists and create snapshot dir (refuse to overwrite)
+    # 4. Validate parent exists on drive (before creating anything)
+    # ------------------------------------------------------------------
+    if parent_id is not None:
+        parent_manifest_path = os.path.join(
+            drive, "snapshots", parent_id, "manifest.json"
+        )
+        if not os.path.isfile(parent_manifest_path):
+            log_error(
+                f"parent snapshot manifest not found — refusing to create child snapshot. "
+                f"parent_id={parent_id!r}",
+                path=parent_manifest_path,
+            )
+            sys.exit(1)
+        log_info(f"parent snapshot validated: {parent_id}")
+
+    # ------------------------------------------------------------------
+    # 5a. Ensure objects/ exists and create snapshot dir (refuse to overwrite)
     # ------------------------------------------------------------------
     objects_dir = os.path.join(drive, "objects")
     os.makedirs(objects_dir, exist_ok=True)
@@ -303,7 +319,7 @@ def run_snapshot(
     log_path(snapshot_dir, level="info")
 
     # ------------------------------------------------------------------
-    # 5. Process each category
+    # 5b. Process each category
     # ------------------------------------------------------------------
     manifest_schema = _load_manifest_schema()
     categories_payload: dict[str, Any] = {}

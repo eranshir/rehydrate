@@ -376,6 +376,17 @@ class TestSnapshotManifest(unittest.TestCase):
         parent_id = "parent-snap-20260510T000000Z"
         drive2 = os.path.join(self.tmpdir, "drive2")
         os.makedirs(drive2)
+        # First create the parent snapshot so validation passes
+        proc_parent = _run_snapshot(
+            walk_output=self.walk_output,
+            category="dotfiles",
+            probe_output=self.probe_output,
+            drive=drive2,
+            snapshot_id=parent_id,
+            home=self.home,
+        )
+        self.assertEqual(proc_parent.returncode, 0, proc_parent.stderr)
+        # Now create child referencing the parent
         proc = _run_snapshot(
             walk_output=self.walk_output,
             category="dotfiles",

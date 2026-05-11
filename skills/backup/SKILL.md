@@ -11,6 +11,7 @@ allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-repos.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-fullsnap.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py *)
+  - Bash(ls -1 *)
   - Bash(ls *)
   - Bash(mkdir *)
   - Bash(df *)
@@ -212,6 +213,22 @@ If you need to enumerate enabled categories dynamically, read
 `${CLAUDE_SKILL_DIR}/../../categories.yaml` and walk only those with `enabled: true`.
 
 ### Step 4 — Run snapshot.py
+
+#### Step 4a — Check for prior snapshots and offer parent-chaining
+
+Before invoking `snapshot.py`, check whether any prior snapshots exist on the drive:
+
+```bash
+LATEST=$(ls -1 <drive_path>/llm-backup/snapshots/ 2>/dev/null | sort -r | head -1)
+```
+
+- If `LATEST` is non-empty: show the most recent snapshot ID to the user and ask:
+  "Found existing snapshot `<LATEST>`. Chain the new snapshot as its child? (recommended yes)"
+  - If the user says **yes** (or accepts the default): invoke `snapshot.py` with `--parent <LATEST>`.
+  - If the user says **no**: invoke `snapshot.py` without `--parent`.
+- If no prior snapshots exist (snapshots/ is empty or absent): invoke `snapshot.py` without `--parent`.
+
+#### Step 4b — Invoke snapshot.py
 
 For each enabled category that was walked, pass `--walk-output` and `--category`
 to `snapshot.py`. For `package-list`, `app-list`, `repo-list`, and
