@@ -12,9 +12,15 @@
 
 ---
 
-A developer Mac is hundreds of gigabytes of Homebrew, npm, pip, App Store binaries, git checkouts, browser caches, and node_modules — almost all of which is **already on the public internet** or trivially reinstallable. The only part you actually need to back up is the small slice that is *truly* local: your dotfiles, your SSH keys, your `.env` files, your sessions, your locally-authored projects.
+## Backup, rethought for the AI era
 
-**rehydrate** is a [Claude Code](https://www.anthropic.com/claude-code) plugin that splits your machine along that line. Apps, packages, and repos become small inventory files (`Brewfile`, `pip-requirements.txt`, `repos.json`, …) that a future LLM can replay on a fresh machine. The rest is captured verbatim into a content-addressed object store on your drive. Every backup is automatically restored into a sandbox and byte-diffed against the source before the snapshot is reported as successful.
+Backup tools haven't fundamentally changed since the tape-archive era. They copy bytes — every byte, faithfully, indiscriminately. Time Machine, Carbon Copy Cloner, Backblaze, restic: same mental model. The unstated assumption is that bytes are precious and the machine that restores them is dumb.
+
+Both halves of that assumption are now wrong.
+
+Most of a modern developer Mac is **already on the public internet** — every Homebrew formula, every App Store binary, every cloned repository, every `pip install`. Copying those bytes to a backup drive is not preservation; it is duplication of something that already exists in canonical form somewhere else. And the machine doing the restore is no longer dumb. It can run an LLM that knows what Homebrew is, can re-execute `brew bundle install`, can clone a list of repos by URL, can match a bundle ID to an App Store entry, and can reason about drift when the OS has moved on two major versions.
+
+**rehydrate** is an attempt to design backup from scratch with both of those facts as load-bearing constraints. It is a [Claude Code](https://www.anthropic.com/claude-code) plugin that splits your machine along the line between *what is truly local* and *what is just locally-present-but-publicly-reproducible*. The first half is captured verbatim into a content-addressed object store. The second half is captured as small inventory files (`Brewfile`, `pip-requirements.txt`, `repos.json`, `apps inventory.json`) that a future LLM replays on a fresh machine. Every backup is automatically restored into a sandbox and byte-diffed against the source before the snapshot is reported as successful.
 
 ## Why rehydrate
 
