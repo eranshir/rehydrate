@@ -1,0 +1,12 @@
+{
+  "name": "rehydrate",
+  "version": "0.0.1",
+  "description": "LLM-powered backup and restore plugin for Claude Code. Captures the knowledge of your machine — apps, packages, profiles, dotfiles, sessions — into a self-describing snapshot that a future LLM can replay against a fresh machine.",
+  "author": {
+    "name": "Eran Shir",
+    "url": "https://github.com/eranshir"
+  },
+  "homepage": "https://github.com/eranshir/rehydrate",
+  "repository": "https://github.com/eranshir/rehydrate",
+  "license": "MIT"
+}
