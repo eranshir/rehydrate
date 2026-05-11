@@ -1,119 +1,114 @@
+<div align="center">
+
 # rehydrate
 
-> LLM-powered backup and restore for your Mac. Stores knowledge, not bytes.
+**Backup that stores the knowledge of your Mac — not its bytes.**
 
-Traditional backups store every byte. **rehydrate** stores the knowledge that the bytes can be
-re-derived from. Apps, packages, runtimes, and repository contents shrink to an inventory list.
-What stays full-size: secrets, profiles, sessions, locally-authored files, and custom configs —
-anything that is not already on the public internet or reproducible from a canonical source.
-The snapshot is self-describing: a manifest plus payload that a future LLM (different model,
-possibly different OS version, possibly years later) can replay against a fresh machine.
+[![CI](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml/badge.svg)](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml) &nbsp; [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE) &nbsp; [![Made for Claude Code](https://img.shields.io/badge/made_for-Claude_Code-7c3aed)](https://www.anthropic.com/claude-code)
 
-## Status
+<img src="docs/hero.svg" alt="rehydrate: backs up the knowledge of your Mac, not its bytes. Three panels show your Mac on the left, a compact snapshot in the center, and a fresh rehydrated Mac on the right." width="100%">
 
-**Development — v0.1 in progress.**
+</div>
 
-[![CI](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml/badge.svg)](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+---
 
-## What rehydrate does
+A developer Mac is hundreds of gigabytes of Homebrew, npm, pip, App Store binaries, git checkouts, browser caches, and node_modules — almost all of which is **already on the public internet** or trivially reinstallable. The only part you actually need to back up is the small slice that is *truly* local: your dotfiles, your SSH keys, your `.env` files, your sessions, your locally-authored projects.
 
-- **Captures what is truly local** — secrets, dotfiles, SSH keys, GPG keys, app sessions,
-  browser profiles, launchd agents, macOS defaults, and locally-authored projects that have
-  no git remote.
-- **Treats apps, packages, and repos as knowledge to re-derive** — instead of copying gigabytes
-  of binaries, rehydrate records a Brewfile, pip requirements, npm globals, cargo installs, and
-  git remote URLs. The restore LLM re-derives them on the target machine.
-- **Round-trip verified via sandboxed restore** — after every backup, `verify-sandbox.py` drives
-  the full restore procedure into a temp directory, diffs the result against the snapshot, and
-  confirms bytes match before reporting success.
+**rehydrate** is a [Claude Code](https://www.anthropic.com/claude-code) plugin that splits your machine along that line. Apps, packages, and repos become small inventory files (`Brewfile`, `pip-requirements.txt`, `repos.json`, …) that a future LLM can replay on a fresh machine. The rest is captured verbatim into a content-addressed object store on your drive. Every backup is automatically restored into a sandbox and byte-diffed against the source before the snapshot is reported as successful.
+
+## Why rehydrate
+
+- **Tiny on disk.** All 40 apps on this Mac fit in **8 KB** of inventory. Every package manager combined: **&lt;5 KB**. 31 cloned git repos: a **2 KB** list of remote URLs.
+- **Restorable years from now.** The snapshot ships with a hybrid `manifest.json` (machine-readable inventory) plus a `RESTORE-GUIDE.md` (narrative rationale for the future LLM). Designed to survive across model versions, OS upgrades, and arch changes.
+- **Verified end-to-end, every time.** After each backup, `verify-sandbox.py` actually drives the full `restore-plan` → `restore-apply` flow into a throwaway temp directory and compares every byte against the manifest. If the round-trip fails, the snapshot is flagged before you trust it.
 
 ## Quick start
 
-**Install** (see [INSTALL.md](INSTALL.md) for full paths):
-
-Path B — install from a local clone (current method before marketplace submission):
+**Install** (current method — clone and register as a local plugin; see [INSTALL.md](INSTALL.md)):
 
 ```bash
 git clone https://github.com/eranshir/rehydrate.git ~/.claude/plugins/rehydrate
-# then in Claude Code:
+# in Claude Code:
 # /plugin install --plugin-dir ~/.claude/plugins/rehydrate
 ```
 
-As of v0.1, the plugin is not yet submitted to the Claude Code marketplace. Once published,
-the recommended path will be `/plugin install rehydrate` directly in Claude Code.
+Once published to the Claude Code marketplace, the install becomes a one-liner: `/plugin install rehydrate`.
 
 **Back up this machine:**
 
-```bash
-# In Claude Code — type the slash command:
+```text
 /rehydrate:backup
 ```
 
-The skill will prompt for a drive path (e.g. `/Volumes/PortableSSD`) and an optional snapshot
-label, then walk all enabled categories and write the snapshot to the drive.
+The skill asks for a drive path (e.g. `/Volumes/PortableSSD`) and an optional label, then walks every enabled category and writes the snapshot. If a previous snapshot exists on the drive, you'll be prompted to chain to it for incremental dedup.
 
-**Restore from a snapshot:**
+**Restore a snapshot:**
 
-```bash
-# In Claude Code — type the slash command:
+```text
 /rehydrate:restore
 ```
 
-The skill will ask for the snapshot path, present a drift summary and a restore plan, require
-explicit confirmation at two checkpoints, run a dry-run pass, then apply the live restore.
+The skill loads the manifest, probes the target machine, shows a side-by-side drift summary, presents the action plan, runs a dry-run, and requires explicit confirmation at two checkpoints before touching `$HOME`. Restoring to a sandbox tempdir is a single flag away.
 
-## Architecture at a glance
+## A real backup, by the numbers
+
+Captured live from this developer Mac:
+
+| Category | Bytes on the drive | What it represents |
+|---|---:|---|
+| `app-inventory` (40 apps) | 8 KB | `/Applications/` bundle metadata, sorted by bundle ID |
+| `package-managers` | &lt;5 KB | Brewfile + npm-globals.json + pip-requirements.txt + cargo-installed.txt + gem-list.txt |
+| `dev-projects` (31 repos) | 2 KB | Remote URLs, current branch, HEAD SHA — restore is `git clone` |
+| `dev-projects` (secrets) | tens of KB | gitignored `.env` / `.p8` / `credentials.json` files (verified gitignored via `git check-ignore`) |
+| `local-only-projects` | ~1 GB | 14 projects with no git remote, captured as full file trees (excluding `node_modules` / `.venv` / build dirs) |
+| `dotfiles` / `ssh-keys` / `gnupg` | &lt;100 KB | Plain files, modes preserved (0600 for keys) |
+| `defaults` / `launchagents` | ~10 KB | macOS preference plists + user launchd agents |
+| `browser-profiles` / `app-sessions` | ~3 GB | Chrome/Firefox/etc. (caches excluded); Claude/Codex/Gemini/VS Code/Cursor sessions |
+
+Total snapshot: a few GB. A traditional bit-for-bit clone of the same Mac would be ~300 GB.
+
+## Architecture
 
 ```
-~/HOME ──walk-* scripts──> walk-output JSON ──snapshot.py──> drive
-                                                              ├── objects/<aa>/<bb>/<sha256>   (content-addressed, deduped)
-                                                              └── snapshots/<id>/manifest.json
+~/HOME ──walk-* scripts──▶ walk-output JSON ──snapshot.py──▶ drive
+                                                             ├── objects/<aa>/<bb>/<sha256>   (content-addressed, deduped)
+                                                             └── snapshots/<id>/manifest.json
+                                                                                + RESTORE-GUIDE.md
+                                                                                + parent.txt
 
-drive ──restore-plan.py──> plan JSON ──restore-apply.py──> target
-                                            └── verify-sandbox.py confirms bytes round-trip
+drive ──restore-plan.py──▶ plan JSON ──restore-apply.py──▶ target
+                                            └── verify-sandbox.py confirms every byte round-trips
 ```
 
-Each walker corresponds to a strategy:
+Each category in [`categories.yaml`](categories.yaml) is bound to one of five strategies. Each strategy has a dedicated walker that emits a uniform JSON shape, so `snapshot.py` ingests them all the same way:
 
-| Strategy | Walker script |
-|---|---|
-| `file-list` | `scripts/walk.py` |
-| `package-list` | `scripts/walk-packages.py` |
-| `app-list` | `scripts/walk-apps.py` |
-| `repo-list` | `scripts/walk-repos.py` |
-| `full-snapshot` | `scripts/walk-fullsnap.py` |
-
-Objects are stored at `<drive>/llm-backup/objects/<aa>/<bb>/<sha256>` — a two-level fanout
-matching Git's loose object layout. Cross-snapshot deduplication is automatic: identical file
-content is stored once regardless of path or snapshot.
-
-## Categories supported (v0.1)
-
-| Category | Strategy | What is captured |
+| Strategy | Walker | What it captures |
 |---|---|---|
-| `dotfiles` | file-list | Shell rc files, git config, tmux config, editor config |
-| `ssh-keys` | file-list | `~/.ssh/` (private keys, known_hosts, authorized_keys) |
-| `gnupg` | file-list | `~/.gnupg/` (config and keys) |
-| `launchagents` | file-list | `~/Library/LaunchAgents/*.plist` |
-| `defaults` | file-list | Key macOS preference plists (Dock, Finder, Terminal, iTerm2, etc.) |
-| `browser-profiles` | file-list | Chrome, Firefox, Brave, Edge profiles (not Safari — iCloud handles that) |
-| `app-sessions` | file-list | Claude, Codex, Gemini, Cursor, VS Code user settings and sessions |
-| `package-managers` | package-list | Brewfile, pip requirements, npm globals, cargo, go, gem inventories |
-| `app-inventory` | app-list | `/Applications` bundle metadata, resolved to cask names where possible |
-| `dev-projects` | repo-list | Git repos with remotes — remote URLs + gitignored secrets |
-| `local-only-projects` | full-snapshot | Project dirs with no git remote — full file tree |
-| `custom-content` | file-list | User-classified folders (populated at backup time via prompts) |
+| `file-list` | [`scripts/walk.py`](scripts/walk.py) | Files matching globs (dotfiles, ssh-keys, gnupg, launchagents, defaults, browser-profiles, app-sessions, custom-content) |
+| `package-list` | [`scripts/walk-packages.py`](scripts/walk-packages.py) | `brew bundle dump`, `npm list -g`, `pip freeze`, `cargo install --list`, `gem list`, `~/go/bin` contents |
+| `app-list` | [`scripts/walk-apps.py`](scripts/walk-apps.py) | `/Applications/*.app` Info.plist metadata + cask/App-Store/manual source heuristic |
+| `repo-list` | [`scripts/walk-repos.py`](scripts/walk-repos.py) | Git remote URLs + branch + HEAD; gitignored secrets verified via `git check-ignore` |
+| `full-snapshot` | [`scripts/walk-fullsnap.py`](scripts/walk-fullsnap.py) | Directory trees without git remotes; aggressive default excludes |
 
-iCloud-trusted categories (Mail, Notes, Photos, Safari, Keychain, Contacts, Calendar,
-Reminders, Voice Memos, Messages, App Store) are excluded by default. See [SECURITY.md](SECURITY.md).
+Objects in `<drive>/llm-backup/objects/<aa>/<bb>/<sha256>` follow the same two-level fanout as Git's loose object layout. Cross-snapshot dedup is automatic: a file with the same SHA-256 is stored once regardless of which snapshots reference it. `snapshot-gc.py` reclaims objects no longer referenced by any retained snapshot.
+
+## What gets captured (and what doesn't)
+
+iCloud handles **Mail, Notes, Photos, Safari, Keychain, Contacts, Calendar, Reminders, Voice Memos, Messages**, and **App Store apps re-download from your Apple ID** — so rehydrate skips all of those by default. App binaries don't get copied either; they're listed by bundle ID and reinstalled on the target via brew cask or App Store. See [SECURITY.md](SECURITY.md) for what is captured plaintext and the trust model.
 
 ## Documentation
 
-- [INSTALL.md](INSTALL.md) — installation paths (marketplace, local clone, skills-only)
-- [USAGE.md](USAGE.md) — end-to-end walkthrough (backup, restore, diff, GC, customisation)
-- [SECURITY.md](SECURITY.md) — trust model, plaintext secrets caveat, no-PII logging
-- [docs/adr/001-architecture.md](docs/adr/001-architecture.md) — nine architectural decisions and their rationale
+- **[INSTALL.md](INSTALL.md)** — three installation paths (marketplace, local clone, skills-only)
+- **[USAGE.md](USAGE.md)** — end-to-end walkthrough: backup, restore, snapshot diff, GC, customisation, fresh-Mac migration
+- **[SECURITY.md](SECURITY.md)** — trust model, plaintext secrets caveat, no-PII logging guarantee
+- **[docs/adr/001-architecture.md](docs/adr/001-architecture.md)** — nine architectural decisions and their rationale
+
+## Project status
+
+**v0.1.0** — initial public release. 396 unit tests; CI green on macOS-14. The architecture is stable; the v2 roadmap focuses on encryption-at-rest, vault-backed secrets, and cross-snapshot diff visualisation.
+
+Contributions and issues welcome at <https://github.com/eranshir/rehydrate/issues>.
 
 ## License
 
-[MIT](LICENSE)
+[MIT](LICENSE) &copy; Eran Shir
