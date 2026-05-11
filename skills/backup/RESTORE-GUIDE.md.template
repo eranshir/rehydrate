@@ -1,0 +1,115 @@
+# Rehydrate Snapshot: {snapshot_id}
+
+> This document was generated automatically at backup time. It is the narrative
+> companion to `manifest.json`. Read it first when planning a restore.
+
+---
+
+## Snapshot metadata
+
+| Field | Value |
+|---|---|
+| Snapshot ID | `{snapshot_id}` |
+| Created at | `{created_at}` |
+| Backup drive | `{drive_path}` |
+
+---
+
+## What this snapshot contains
+
+{categories_table}
+
+All files are stored in content-addressed object storage at
+`{drive_path}/llm-backup/objects/`. Each object is named by its SHA-256 digest
+and is deduplicated across snapshots.
+
+---
+
+## Source machine
+
+| Field | Value |
+|---|---|
+| OS | {os} {os_version} |
+| Build | {build} |
+| Hostname | `{hostname}` |
+| User | `{user}` |
+| Architecture | {arch} |
+| Hardware model | {model} |
+
+---
+
+## How to restore
+
+### Prerequisites
+
+- This backup drive must be mounted at the same path (`{drive_path}`) or you
+  must note the new mount path before starting.
+- You are running macOS (rehydrate v0.1 supports macOS only).
+- Claude Code is installed and the rehydrate plugin is loaded.
+
+### Steps
+
+1. Mount the backup drive and confirm the snapshot directory is accessible:
+
+   ```
+   ls {drive_path}/llm-backup/snapshots/{snapshot_id}/
+   ```
+
+2. Open Claude Code and invoke the restore skill:
+
+   ```
+   /rehydrate:restore
+   ```
+
+3. When prompted, provide:
+   - **Snapshot path**: `{drive_path}/llm-backup/snapshots/{snapshot_id}`
+   - **Target**: `sandbox` for a sandboxed test restore, or `live` to restore
+     directly to `$HOME` (irreversible — confirm carefully).
+
+4. The restore skill will:
+   - Read `manifest.json` to build a restore plan
+   - Verify object hashes match the manifest before writing
+   - Restore files to the target, preserving original `mode` and `mtime`
+   - Report any files that could not be restored
+
+5. After a sandboxed restore, review the diff output to confirm correctness
+   before running a live restore.
+
+---
+
+## Known caveats (v0.1)
+
+- **Plaintext secrets on drive.** Any captured files containing secrets (SSH
+  keys, `.env` files, API tokens) are stored in plaintext in the object store.
+  The backup drive must be physically trusted. Encryption at rest is planned
+  for a later version. See ADR-001 §5 for rationale.
+
+- **Sandboxed verify only.** The `/rehydrate:restore` skill's verify mode
+  restores into a temporary directory and diffs the result. It does not perform
+  a live restore into a full macOS VM. See ADR-001 §3 for rationale.
+
+- **macOS only.** rehydrate v0.1 supports macOS. No Linux or Windows support
+  exists. Attempting to restore on a different OS will fail.
+
+- **dotfiles category only.** This v0.1 snapshot captures only the `dotfiles`
+  category (`~/.zshrc`, `~/.gitconfig`, and similar shell and editor configs).
+  SSH keys, package managers, app inventory, dev projects, and other categories
+  are planned for Phase 3 and later.
+
+- **No incremental chain.** All v0.1 snapshots are full (not incremental).
+  `parent_snapshot` is `null` in the manifest. Cross-snapshot deduplication via
+  the shared `objects/` store still applies, but no delta chain exists.
+
+- **iCloud-managed data excluded.** Mail, Notes, Photos, Safari, Keychain,
+  Contacts, Calendar, Reminders, Voice Memos, Messages, and App Store history
+  are not captured. They are assumed to be recoverable from iCloud. If iCloud
+  sync is disabled for any of these, they will not be in this snapshot.
+
+---
+
+## Architecture references
+
+- [ADR-001: rehydrate v0.1 Core Architecture Decisions](../../docs/adr/001-architecture.md)
+  — covers the hybrid manifest format, content-addressed object storage,
+  sandboxed verify strategy, iCloud exclusion list, plaintext secrets tradeoff,
+  and plugin packaging rationale.
