@@ -9,6 +9,12 @@
 #
 # Globs use ~ for $HOME and standard shell glob syntax with ** for recursive.
 # `iCloud_managed: true` means iCloud already syncs this content — skip by default.
+#
+# SECURITY NOTICE: ssh-keys, gnupg, and browser-profiles contain secrets (private keys,
+# keyrings, saved passwords/cookies) and are stored PLAINTEXT on the backup drive per
+# ADR-001 §5. Ensure the backup drive is physically secure or encrypted at the device
+# level (e.g., FileVault on an external drive). Encrypted-at-rest secrets are planned
+# for v0.2.
 
 schema_version: "0.1.0"
 
@@ -35,25 +41,36 @@ categories:
       - "**/.DS_Store"
     iCloud_managed: false
 
-  # Stub entries — Phase 3 work. Specify enough so the future implementer knows what each is for.
+  # Phase 3.1: file-list categories — enabled in issue #15.
   - name: ssh-keys
-    enabled: false
+    enabled: true
     strategy: file-list
     description: SSH private keys, known_hosts, authorized_keys
     globs:
       - ~/.ssh/**
+    exclude:
+      - "**/socket"
+      - "**/control-socket-*"
+      - "**/agent.*"
+      - "**/*.sock"
+      - "**/.DS_Store"
     iCloud_managed: false
 
   - name: gnupg
-    enabled: false
+    enabled: true
     strategy: file-list
     description: GnuPG configuration and keys
     globs:
       - ~/.gnupg/**
+    exclude:
+      - "**/S.gpg-agent*"
+      - "**/random_seed"
+      - "**/.gpg-v21-migrated"
+      - "**/.DS_Store"
     iCloud_managed: false
 
   - name: launchagents
-    enabled: false
+    enabled: true
     strategy: file-list
     description: User-level launchd agents
     globs:
@@ -72,7 +89,7 @@ categories:
     iCloud_managed: false
 
   - name: browser-profiles
-    enabled: false
+    enabled: true
     strategy: file-list
     description: Chrome/Firefox/Brave/Edge user profiles (NOT Safari — iCloud handles that)
     globs:
@@ -80,10 +97,25 @@ categories:
       - ~/Library/Application Support/Firefox/**
       - ~/Library/Application Support/BraveSoftware/**
       - ~/Library/Application Support/Microsoft Edge/**
+    exclude:
+      - "**/Cache/**"
+      - "**/Code Cache/**"
+      - "**/GPUCache/**"
+      - "**/Service Worker/CacheStorage/**"
+      - "**/Service Worker/ScriptCache/**"
+      - "**/blob_storage/**"
+      - "**/Network/Cache/**"
+      - "**/File System/**"
+      - "**/Crashpad/**"
+      - "**/component_crx_cache/**"
+      - "**/optimization_guide_model_store/**"
+      - "**/Worker/CacheStorage/**"
+      - "**/Worker/ScriptCache/**"
+      - "**/.DS_Store"
     iCloud_managed: false
 
   - name: app-sessions
-    enabled: false
+    enabled: true
     strategy: file-list
     description: Claude/Codex/Gemini/Cursor/VS Code sessions and settings
     globs:
@@ -93,6 +125,12 @@ categories:
       - ~/Library/Application Support/Cursor/**
       - ~/Library/Application Support/Code/User/settings.json
       - ~/Library/Application Support/Code/User/keybindings.json
+    exclude:
+      - "**/cache/**"
+      - "**/tmp/**"
+      - "**/Code Cache/**"
+      - "**/IndexedDB/**"
+      - "**/.DS_Store"
     iCloud_managed: false
 
   - name: package-managers
@@ -141,10 +179,12 @@ categories:
     iCloud_managed: false
 
   - name: custom-content
-    enabled: false
+    enabled: true
     strategy: file-list
     description: User-classified folders that aren't covered by other categories (Music libraries, photo collections not in iCloud, etc.)
-    globs: []  # user fills in at backup time
+    # globs are intentionally empty here. The backup SKILL.md prompts the user for
+    # paths at backup time and passes them as --globs overrides to walk.py.
+    globs: []
     iCloud_managed: false
 
 # Categories iCloud already syncs — skip by default in any backup.
