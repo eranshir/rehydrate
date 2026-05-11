@@ -1,0 +1,174 @@
+# rehydrate categories taxonomy
+#
+# Each category describes what to capture and how. Strategy types:
+#   file-list      — match files by glob, capture each as bytes (e.g. dotfiles, ssh-keys)
+#   package-list   — capture installed-package inventory (e.g. Brewfile, pip freeze)
+#   app-list       — capture installed-app inventory by name (e.g. /Applications/*.app → cask match)
+#   repo-list      — capture git remotes; restore clones from remote (e.g. dev-projects)
+#   full-snapshot  — capture everything in a directory recursively (e.g. local-only-projects)
+#
+# Globs use ~ for $HOME and standard shell glob syntax with ** for recursive.
+# `iCloud_managed: true` means iCloud already syncs this content — skip by default.
+
+schema_version: "0.1.0"
+
+categories:
+  - name: dotfiles
+    enabled: true
+    strategy: file-list
+    description: Shell rc files, git config, tmux config — the bedrock of a developer's environment
+    globs:
+      - ~/.bashrc
+      - ~/.bash_profile
+      - ~/.zshrc
+      - ~/.zshenv
+      - ~/.zprofile
+      - ~/.profile
+      - ~/.gitconfig
+      - ~/.tmux.conf
+      - ~/.inputrc
+      - ~/.editorconfig
+      - ~/.config/git/**
+      - ~/.config/zsh/**
+      - ~/.config/nvim/**
+    exclude:
+      - "**/.DS_Store"
+    iCloud_managed: false
+
+  # Stub entries — Phase 3 work. Specify enough so the future implementer knows what each is for.
+  - name: ssh-keys
+    enabled: false
+    strategy: file-list
+    description: SSH private keys, known_hosts, authorized_keys
+    globs:
+      - ~/.ssh/**
+    iCloud_managed: false
+
+  - name: gnupg
+    enabled: false
+    strategy: file-list
+    description: GnuPG configuration and keys
+    globs:
+      - ~/.gnupg/**
+    iCloud_managed: false
+
+  - name: launchagents
+    enabled: false
+    strategy: file-list
+    description: User-level launchd agents
+    globs:
+      - ~/Library/LaunchAgents/*.plist
+    iCloud_managed: false
+
+  - name: defaults
+    enabled: false
+    strategy: defaults-domains  # captures `defaults read <domain>` for an allow-list of domains
+    description: macOS user-domain preferences for Dock, Finder, NSGlobalDomain, etc.
+    domains:
+      - NSGlobalDomain
+      - com.apple.dock
+      - com.apple.finder
+      - com.apple.menuextra.clock
+    iCloud_managed: false
+
+  - name: browser-profiles
+    enabled: false
+    strategy: file-list
+    description: Chrome/Firefox/Brave/Edge user profiles (NOT Safari — iCloud handles that)
+    globs:
+      - ~/Library/Application Support/Google/Chrome/**
+      - ~/Library/Application Support/Firefox/**
+      - ~/Library/Application Support/BraveSoftware/**
+      - ~/Library/Application Support/Microsoft Edge/**
+    iCloud_managed: false
+
+  - name: app-sessions
+    enabled: false
+    strategy: file-list
+    description: Claude/Codex/Gemini/Cursor/VS Code sessions and settings
+    globs:
+      - ~/.claude/**
+      - ~/.codex/**
+      - ~/.gemini/**
+      - ~/Library/Application Support/Cursor/**
+      - ~/Library/Application Support/Code/User/settings.json
+      - ~/Library/Application Support/Code/User/keybindings.json
+    iCloud_managed: false
+
+  - name: package-managers
+    enabled: false
+    strategy: package-list
+    description: Homebrew, npm globals, pip, cargo, go install, gem
+    managers:
+      - brew     # brew bundle dump
+      - npm      # npm list -g --depth=0
+      - pip      # pip freeze (system + venvs detected)
+      - cargo    # cargo install --list
+      - go       # parse ~/go/bin
+      - gem      # gem list
+    iCloud_managed: false
+
+  - name: app-inventory
+    enabled: false
+    strategy: app-list
+    description: Installed apps in /Applications and ~/Applications, resolved to cask names where possible
+    iCloud_managed: false  # AppStore apps re-download on restore via iCloud; non-AppStore via cask
+
+  - name: dev-projects
+    enabled: false
+    strategy: repo-list
+    description: Git repos with remotes — capture remote URLs + gitignored secrets, clone on restore
+    roots:
+      - ~/Documents/Projects
+      - ~/Projects
+      - ~/src
+    iCloud_managed: false
+
+  - name: local-only-projects
+    enabled: false
+    strategy: full-snapshot
+    description: Project directories that have no git remote — capture full contents (minus venvs/node_modules)
+    roots:
+      - ~/Documents/Projects
+    exclude:
+      - "**/node_modules/**"
+      - "**/.venv/**"
+      - "**/venv/**"
+      - "**/__pycache__/**"
+      - "**/.next/**"
+      - "**/dist/**"
+      - "**/build/**"
+    iCloud_managed: false
+
+  - name: custom-content
+    enabled: false
+    strategy: file-list
+    description: User-classified folders that aren't covered by other categories (Music libraries, photo collections not in iCloud, etc.)
+    globs: []  # user fills in at backup time
+    iCloud_managed: false
+
+# Categories iCloud already syncs — skip by default in any backup.
+# These are documentation; rehydrate does not attempt to back them up.
+iCloud_trusted_skip:
+  - name: Mail
+    reason: iCloud Mail sync
+  - name: Notes
+    reason: iCloud Notes sync
+  - name: Photos
+    reason: iCloud Photos sync
+  - name: Safari
+    reason: iCloud Safari sync (history, bookmarks, tabs)
+  - name: Keychain
+    reason: iCloud Keychain sync
+  - name: Contacts
+    reason: iCloud Contacts sync
+  - name: Calendar
+    reason: iCloud Calendar sync
+  - name: Reminders
+    reason: iCloud Reminders sync
+  - name: Voice Memos
+    reason: iCloud Voice Memos sync
+  - name: Messages
+    reason: Messages in iCloud
+  - name: AppStore
+    reason: App Store apps re-download on restore from Apple ID
