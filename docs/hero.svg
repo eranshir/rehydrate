@@ -1,4 +1,4 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1200 520" role="img"
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1500 560" role="img"
      aria-label="rehydrate: knowledge-based backup for your Mac. Captures what is truly local, treats apps and packages as inventories to re-derive.">
   <title>rehydrate</title>
   <desc>Three panels showing the flow: your Mac on the left, a compact snapshot in the center, and a restored Mac on the right. The center panel emphasizes that apps and packages are stored as inventories (kilobytes) rather than copied bytes.</desc>
@@ -11,16 +11,17 @@
     .chip-hero     { fill: #ffffff; stroke: #bae6fd; stroke-width: 1; }
     .divider       { stroke: #e2e8f0; stroke-width: 1; }
     .divider-hero  { stroke: #bae6fd; stroke-width: 1; }
-    .t-title       { font: 700 38px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #0f172a; }
-    .t-tagline     { font: 400 17px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #475569; letter-spacing: 0.01em; }
-    .t-cardtitle   { font: 600 18px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1e293b; }
+    .t-title       { font: 700 40px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #0f172a; }
+    .t-tagline     { font: 400 18px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #475569; letter-spacing: 0.01em; }
+    .t-cardtitle   { font: 600 19px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #1e293b; }
     .t-label       { font: 500 14px ui-monospace, "SF Mono", Menlo, monospace; fill: #334155; }
     .t-size        { font: 600 13px ui-monospace, "SF Mono", Menlo, monospace; fill: #0ea5e9; }
     .t-size-dim    { font: 500 13px ui-monospace, "SF Mono", Menlo, monospace; fill: #64748b; }
     .t-small       { font: 400 13px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #64748b; }
     .t-caption     { font: 500 14px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #475569; }
-    .t-arrowlabel  { font: 600 13px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #0ea5e9; letter-spacing: 0.08em; text-transform: uppercase; }
+    .t-arrowlabel  { font: 600 13px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #0ea5e9; letter-spacing: 0.1em; text-transform: uppercase; }
     .t-pill        { font: 600 12px ui-monospace, "SF Mono", Menlo, monospace; fill: #0c4a6e; }
+    .t-section     { font: 500 12px ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif; fill: #64748b; letter-spacing: 0.04em; text-transform: uppercase; }
     .arrow         { stroke: #0ea5e9; stroke-width: 2.5; fill: none; }
     .pill-bg       { fill: #e0f2fe; stroke: #7dd3fc; stroke-width: 1; }
 
@@ -41,6 +42,7 @@
       .t-caption     { fill: #cbd5e1; }
       .t-arrowlabel  { fill: #38bdf8; }
       .t-pill        { fill: #bae6fd; }
+      .t-section     { fill: #94a3b8; }
       .arrow         { stroke: #38bdf8; }
       .pill-bg       { fill: #082f49; stroke: #0369a1; }
     }
@@ -53,128 +55,135 @@
     </marker>
   </defs>
 
-  <!-- Header -->
-  <text x="600" y="58" text-anchor="middle" class="t-title">rehydrate</text>
-  <text x="600" y="92" text-anchor="middle" class="t-tagline">backup that stores the knowledge of your Mac — not its bytes</text>
+  <!-- ============ Header ============ -->
+  <text x="750" y="58" text-anchor="middle" class="t-title">rehydrate</text>
+  <text x="750" y="92" text-anchor="middle" class="t-tagline">backup that stores the knowledge of your Mac — not its bytes</text>
 
   <!-- ============ LEFT CARD: Your Mac ============ -->
-  <rect x="40" y="135" width="320" height="320" rx="14" class="card"/>
-  <text x="200" y="166" text-anchor="middle" class="t-cardtitle">your Mac</text>
-  <line x1="60" y1="181" x2="340" y2="181" class="divider"/>
+  <!-- card spans x=50 to x=450 (width 400), y=130 to y=470 -->
+  <rect x="50" y="130" width="400" height="340" rx="14" class="card"/>
+  <text x="250" y="164" text-anchor="middle" class="t-cardtitle">your Mac</text>
+  <line x1="80" y1="182" x2="420" y2="182" class="divider"/>
 
-  <!-- Mac category chips -->
-  <g transform="translate(60, 195)">
-    <rect x="0"  y="0"   width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="21"  class="t-label">/Applications</text>
-    <text x="266" y="21" text-anchor="end" class="t-size-dim">~80 GB</text>
+  <!-- Chips inside card: padding 20 each side → chip group at x=70, width 360 -->
+  <g transform="translate(70, 200)">
+    <!-- chip: x=0 width=360 height=34, label at x=16, size text-anchor=end at x=344 -->
+    <rect x="0" y="0"   width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="22" class="t-label">/Applications</text>
+    <text x="344" y="22" text-anchor="end" class="t-size-dim">~80 GB</text>
 
-    <rect x="0"  y="38"  width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="59"  class="t-label">brew / npm / pip / cargo</text>
-    <text x="266" y="59" text-anchor="end" class="t-size-dim">~10 GB</text>
+    <rect x="0" y="42"  width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="64" class="t-label">brew / npm / pip / cargo</text>
+    <text x="344" y="64" text-anchor="end" class="t-size-dim">~10 GB</text>
 
-    <rect x="0"  y="76"  width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="97"  class="t-label">git repos w/ remotes</text>
-    <text x="266" y="97" text-anchor="end" class="t-size-dim">~50 GB</text>
+    <rect x="0" y="84"  width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="106" class="t-label">git repos w/ remotes</text>
+    <text x="344" y="106" text-anchor="end" class="t-size-dim">~50 GB</text>
 
-    <rect x="0"  y="114" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="135" class="t-label">dotfiles + agent sessions</text>
-    <text x="266" y="135" text-anchor="end" class="t-size-dim">~2 GB</text>
+    <rect x="0" y="126" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="148" class="t-label">dotfiles + agent sessions</text>
+    <text x="344" y="148" text-anchor="end" class="t-size-dim">~2 GB</text>
 
-    <rect x="0"  y="152" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="173" class="t-label">ssh / gnupg / .env files</text>
-    <text x="266" y="173" text-anchor="end" class="t-size-dim">~1 MB</text>
+    <rect x="0" y="168" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="190" class="t-label">ssh / gnupg / .env</text>
+    <text x="344" y="190" text-anchor="end" class="t-size-dim">~1 MB</text>
 
-    <rect x="0"  y="190" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="211" class="t-label">browser profiles + defaults</text>
-    <text x="266" y="211" text-anchor="end" class="t-size-dim">~3 GB</text>
+    <rect x="0" y="210" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="232" class="t-label">browser + defaults</text>
+    <text x="344" y="232" text-anchor="end" class="t-size-dim">~3 GB</text>
   </g>
 
-  <text x="200" y="445" text-anchor="middle" class="t-small">a developer Mac &#8776; 150 GB+ of state</text>
+  <text x="250" y="500" text-anchor="middle" class="t-small">a developer Mac &#8776; 150 GB+ of state</text>
 
   <!-- ============ ARROW: backup ============ -->
   <g style="color: #0ea5e9">
-    <path d="M 374 295 L 432 295" class="arrow" marker-end="url(#arrowhead)"/>
+    <path d="M 466 300 L 534 300" class="arrow" marker-end="url(#arrowhead)"/>
   </g>
-  <text x="403" y="280" text-anchor="middle" class="t-arrowlabel">backup</text>
+  <text x="500" y="284" text-anchor="middle" class="t-arrowlabel">backup</text>
 
   <!-- ============ CENTER CARD: Snapshot ============ -->
-  <rect x="440" y="125" width="320" height="340" rx="14" class="card-hero"/>
-  <text x="600" y="156" text-anchor="middle" class="t-cardtitle">snapshot on drive</text>
-  <line x1="460" y1="171" x2="740" y2="171" class="divider-hero"/>
+  <!-- card spans x=550 to x=950 (width 400), y=120 to y=480 -->
+  <rect x="550" y="120" width="400" height="360" rx="14" class="card-hero"/>
+  <text x="750" y="154" text-anchor="middle" class="t-cardtitle">snapshot on drive</text>
+  <line x1="580" y1="172" x2="920" y2="172" class="divider-hero"/>
 
-  <g transform="translate(460, 185)">
-    <!-- Inventory section -->
-    <text x="0" y="14" class="t-small">inventories (re-derive on restore)</text>
+  <!-- Chips inside hero card: padding 20 each side → chip group at x=570, width 360 -->
+  <g transform="translate(570, 190)">
+    <!-- Inventory section header -->
+    <text x="0" y="13" class="t-section">inventories &#183; re-derive on restore</text>
 
-    <rect x="0"  y="22"  width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="41"  class="t-label">Brewfile</text>
-    <text x="266" y="41" text-anchor="end" class="t-size">2 KB</text>
+    <rect x="0" y="22"  width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="42" class="t-label">Brewfile</text>
+    <text x="344" y="42" text-anchor="end" class="t-size">2 KB</text>
 
-    <rect x="0"  y="54"  width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="73"  class="t-label">apps inventory.json</text>
-    <text x="266" y="73" text-anchor="end" class="t-size">8 KB</text>
+    <rect x="0" y="58"  width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="78" class="t-label">apps inventory.json</text>
+    <text x="344" y="78" text-anchor="end" class="t-size">8 KB</text>
 
-    <rect x="0"  y="86"  width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="105" class="t-label">repo URLs + branches</text>
-    <text x="266" y="105" text-anchor="end" class="t-size">2 KB</text>
+    <rect x="0" y="94"  width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="114" class="t-label">repo URLs + branches</text>
+    <text x="344" y="114" text-anchor="end" class="t-size">2 KB</text>
 
-    <rect x="0"  y="118" width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="137" class="t-label">npm / pip / cargo / gem</text>
-    <text x="266" y="137" text-anchor="end" class="t-size">3 KB</text>
+    <rect x="0" y="130" width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="150" class="t-label">npm / pip / cargo / gem</text>
+    <text x="344" y="150" text-anchor="end" class="t-size">3 KB</text>
 
     <!-- Divider -->
-    <line x1="0" y1="160" x2="280" y2="160" class="divider-hero"/>
-    <text x="0" y="178" class="t-small">irreducible local bytes</text>
+    <line x1="0" y1="174" x2="360" y2="174" class="divider-hero"/>
 
-    <rect x="0"  y="186" width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="205" class="t-label">dotfiles + secrets + sessions</text>
-    <text x="266" y="205" text-anchor="end" class="t-size">~3 GB</text>
+    <!-- Bytes section header -->
+    <text x="0" y="194" class="t-section">irreducible local bytes</text>
 
-    <rect x="0"  y="218" width="280" height="28" rx="6" class="chip-hero"/>
-    <text x="14" y="237" class="t-label">defaults + launchagents</text>
-    <text x="266" y="237" text-anchor="end" class="t-size">~5 MB</text>
+    <rect x="0" y="202" width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="222" class="t-label">dotfiles + secrets + sessions</text>
+    <text x="344" y="222" text-anchor="end" class="t-size">~3 GB</text>
+
+    <rect x="0" y="238" width="360" height="30" rx="6" class="chip-hero"/>
+    <text x="16" y="258" class="t-label">defaults + launchagents</text>
+    <text x="344" y="258" text-anchor="end" class="t-size">~5 MB</text>
   </g>
 
-  <!-- Total pill at bottom of hero card -->
-  <rect x="490" y="430" width="220" height="26" rx="13" class="pill-bg"/>
-  <text x="600" y="448" text-anchor="middle" class="t-pill">~3 GB total &#183; 50&#215; smaller</text>
+  <!-- Total pill -->
+  <rect x="600" y="498" width="300" height="28" rx="14" class="pill-bg"/>
+  <text x="750" y="517" text-anchor="middle" class="t-pill">~3 GB total &#183; 50&#215; smaller</text>
 
   <!-- ============ ARROW: restore ============ -->
   <g style="color: #0ea5e9">
-    <path d="M 774 295 L 832 295" class="arrow" marker-end="url(#arrowhead)"/>
+    <path d="M 966 300 L 1034 300" class="arrow" marker-end="url(#arrowhead)"/>
   </g>
-  <text x="803" y="280" text-anchor="middle" class="t-arrowlabel">restore</text>
+  <text x="1000" y="284" text-anchor="middle" class="t-arrowlabel">restore</text>
 
   <!-- ============ RIGHT CARD: Restored Mac ============ -->
-  <rect x="840" y="135" width="320" height="320" rx="14" class="card"/>
-  <text x="1000" y="166" text-anchor="middle" class="t-cardtitle">fresh Mac, rehydrated</text>
-  <line x1="860" y1="181" x2="1140" y2="181" class="divider"/>
+  <!-- card spans x=1050 to x=1450 (width 400), y=130 to y=470 -->
+  <rect x="1050" y="130" width="400" height="340" rx="14" class="card"/>
+  <text x="1250" y="164" text-anchor="middle" class="t-cardtitle">fresh Mac, rehydrated</text>
+  <line x1="1080" y1="182" x2="1420" y2="182" class="divider"/>
 
-  <g transform="translate(860, 195)">
-    <rect x="0"  y="0"   width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="21"  class="t-label">apps</text>
-    <text x="266" y="21" text-anchor="end" class="t-size-dim">brew install --cask</text>
+  <g transform="translate(1070, 200)">
+    <rect x="0" y="0"   width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="22" class="t-label">apps</text>
+    <text x="344" y="22" text-anchor="end" class="t-size-dim">brew install --cask</text>
 
-    <rect x="0"  y="38"  width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="59"  class="t-label">packages</text>
-    <text x="266" y="59" text-anchor="end" class="t-size-dim">brew bundle / pip / npm</text>
+    <rect x="0" y="42"  width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="64" class="t-label">packages</text>
+    <text x="344" y="64" text-anchor="end" class="t-size-dim">brew / pip / npm</text>
 
-    <rect x="0"  y="76"  width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="97"  class="t-label">repos</text>
-    <text x="266" y="97" text-anchor="end" class="t-size-dim">git clone</text>
+    <rect x="0" y="84"  width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="106" class="t-label">repos</text>
+    <text x="344" y="106" text-anchor="end" class="t-size-dim">git clone</text>
 
-    <rect x="0"  y="114" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="135" class="t-label">dotfiles + secrets</text>
-    <text x="266" y="135" text-anchor="end" class="t-size-dim">restore-apply.py</text>
+    <rect x="0" y="126" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="148" class="t-label">dotfiles + secrets</text>
+    <text x="344" y="148" text-anchor="end" class="t-size-dim">restore-apply.py</text>
 
-    <rect x="0"  y="152" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="173" class="t-label">browser + defaults</text>
-    <text x="266" y="173" text-anchor="end" class="t-size-dim">file copy</text>
+    <rect x="0" y="168" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="190" class="t-label">browser + defaults</text>
+    <text x="344" y="190" text-anchor="end" class="t-size-dim">file copy</text>
 
-    <rect x="0"  y="190" width="280" height="32" rx="7" class="chip"/>
-    <text x="14" y="211" class="t-label">verified</text>
-    <text x="266" y="211" text-anchor="end" class="t-size-dim">sandboxed byte diff</text>
+    <rect x="0" y="210" width="360" height="34" rx="7" class="chip"/>
+    <text x="16" y="232" class="t-label">verified</text>
+    <text x="344" y="232" text-anchor="end" class="t-size-dim">sandboxed byte diff</text>
   </g>
 
-  <text x="1000" y="445" text-anchor="middle" class="t-small">re-derived from manifest + the public internet</text>
+  <text x="1250" y="500" text-anchor="middle" class="t-small">re-derived from manifest + the public internet</text>
 </svg>
