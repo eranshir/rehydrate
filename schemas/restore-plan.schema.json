@@ -1,0 +1,199 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eranshir/rehydrate/schemas/restore-plan.schema.json",
+  "title": "rehydrate restore plan",
+  "description": "Per-action restore plan emitted by scripts/restore-plan.py. This document is read-only: it describes what would happen during a restore, not what has happened.",
+  "type": "object",
+  "required": [
+    "plan_version",
+    "snapshot_id",
+    "target",
+    "drift",
+    "actions_by_category",
+    "summary"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "plan_version": {
+      "type": "string",
+      "description": "Semver version of the plan format.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "examples": ["0.1.0"]
+    },
+    "snapshot_id": {
+      "type": "string",
+      "description": "snapshot_id from the source manifest.",
+      "minLength": 1,
+      "examples": ["MacBook-Pro-35.local-2026-05-11T120000Z"]
+    },
+    "target": {
+      "type": "string",
+      "description": "Absolute path of the restore target directory.",
+      "examples": ["/Users/eranshir"]
+    },
+    "drift": {
+      "type": "array",
+      "description": "Structured list of environment-drift warnings detected between the source machine (from the manifest) and the current machine.",
+      "items": {
+        "$ref": "#/$defs/drift_item"
+      }
+    },
+    "actions_by_category": {
+      "type": "object",
+      "description": "Map of category name to the ordered list of planned actions for that category.",
+      "additionalProperties": false,
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*$": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/action"
+          }
+        }
+      }
+    },
+    "summary": {
+      "$ref": "#/$defs/summary"
+    }
+  },
+  "$defs": {
+    "drift_item": {
+      "type": "object",
+      "description": "A single detected drift between the snapshot's source machine and the current machine.",
+      "required": ["kind", "severity"],
+      "additionalProperties": false,
+      "properties": {
+        "kind": {
+          "type": "string",
+          "description": "Machine-readable identifier for the type of drift.",
+          "enum": [
+            "os_version_mismatch",
+            "hostname_mismatch",
+            "user_mismatch",
+            "arch_mismatch"
+          ]
+        },
+        "source": {
+          "type": "string",
+          "description": "Value recorded in the snapshot manifest."
+        },
+        "current": {
+          "type": "string",
+          "description": "Value observed on the current machine."
+        },
+        "severity": {
+          "type": "string",
+          "description": "How significant this drift is for the restore process.",
+          "enum": ["info", "warn", "error"]
+        }
+      }
+    },
+    "action": {
+      "description": "A single planned action for one file entry. The 'type' discriminator selects the applicable variant.",
+      "oneOf": [
+        {"$ref": "#/$defs/action_create"},
+        {"$ref": "#/$defs/action_skip_identical"},
+        {"$ref": "#/$defs/action_overwrite_needs_confirm"}
+      ]
+    },
+    "action_create": {
+      "type": "object",
+      "description": "The file is absent in the target; it will be created.",
+      "required": ["path", "type", "object_hash", "mode"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path relative to $HOME (same as in the manifest).",
+          "pattern": "^[^/]"
+        },
+        "type": {
+          "type": "string",
+          "const": "create"
+        },
+        "object_hash": {
+          "type": "string",
+          "description": "Expected SHA-256 hex digest from the manifest.",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "description": "POSIX mode from the manifest.",
+          "pattern": "^[0-7]{4}$"
+        }
+      }
+    },
+    "action_skip_identical": {
+      "type": "object",
+      "description": "The file already exists in the target and its content matches the manifest; no action required.",
+      "required": ["path", "type"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path relative to $HOME.",
+          "pattern": "^[^/]"
+        },
+        "type": {
+          "type": "string",
+          "const": "skip-identical"
+        }
+      }
+    },
+    "action_overwrite_needs_confirm": {
+      "type": "object",
+      "description": "The file exists in the target but its content (or symlink target) differs; the user must confirm before it is overwritten.",
+      "required": ["path", "type", "current_hash", "expected_hash", "mode"],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path relative to $HOME.",
+          "pattern": "^[^/]"
+        },
+        "type": {
+          "type": "string",
+          "const": "overwrite-needs-confirm"
+        },
+        "current_hash": {
+          "type": "string",
+          "description": "SHA-256 hex digest of the file as it currently exists on the target.",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "expected_hash": {
+          "type": "string",
+          "description": "SHA-256 hex digest expected from the manifest.",
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "mode": {
+          "type": "string",
+          "description": "POSIX mode from the manifest.",
+          "pattern": "^[0-7]{4}$"
+        }
+      }
+    },
+    "summary": {
+      "type": "object",
+      "description": "Aggregate counts of planned actions across all categories.",
+      "required": ["create", "skip-identical", "overwrite-needs-confirm", "total"],
+      "additionalProperties": false,
+      "properties": {
+        "create": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "skip-identical": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "overwrite-needs-confirm": {
+          "type": "integer",
+          "minimum": 0
+        },
+        "total": {
+          "type": "integer",
+          "minimum": 0
+        }
+      }
+    }
+  }
+}

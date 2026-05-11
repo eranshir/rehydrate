@@ -1,0 +1,46 @@
+{
+  "plan_version": "0.1.0",
+  "snapshot_id": "MacBook-Pro-35.local-2026-05-11T120000Z",
+  "target": "/Users/eranshir",
+  "drift": [
+    {
+      "kind": "os_version_mismatch",
+      "source": "26.0",
+      "current": "26.1",
+      "severity": "info"
+    },
+    {
+      "kind": "hostname_mismatch",
+      "source": "MacBook-Pro-35.local",
+      "current": "MacBook-Pro-Backup.local",
+      "severity": "info"
+    }
+  ],
+  "actions_by_category": {
+    "dotfiles": [
+      {
+        "path": ".zshrc",
+        "type": "create",
+        "object_hash": "a3f1e2d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2",
+        "mode": "0644"
+      },
+      {
+        "path": ".gitconfig",
+        "type": "skip-identical"
+      },
+      {
+        "path": ".tmux.conf",
+        "type": "overwrite-needs-confirm",
+        "current_hash": "1111111111111111111111111111111111111111111111111111111111111111",
+        "expected_hash": "b7c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+        "mode": "0644"
+      }
+    ]
+  },
+  "summary": {
+    "create": 1,
+    "skip-identical": 1,
+    "overwrite-needs-confirm": 1,
+    "total": 3
+  }
+}
