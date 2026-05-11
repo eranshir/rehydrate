@@ -4,16 +4,16 @@ description: Restore this Mac from a rehydrate snapshot, with explicit drift war
 when_to_use: User asks to restore from a rehydrate backup, rehydrate a fresh Mac, or run /rehydrate:restore. Trigger phrases include "restore my machine", "rehydrate this Mac", "/rehydrate:restore".
 disable-model-invocation: true
 allowed-tools:
-  - Bash(python3 ${CLAUDE_PLUGIN_DIR}/scripts/restore-plan.py *)
-  - Bash(python3 ${CLAUDE_PLUGIN_DIR}/scripts/restore-apply.py *)
-  - Bash(python3 ${CLAUDE_PLUGIN_DIR}/scripts/probe.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/restore-plan.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/restore-apply.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/probe.py *)
   - Bash(ls *)
   - Bash(mkdir *)
   - Read
   - Write
 ---
 
-<!-- Convention: scripts are referenced via ${CLAUDE_PLUGIN_DIR}/scripts/... -->
+<!-- Convention: scripts are referenced via ${CLAUDE_SKILL_DIR}/../../scripts/... -->
 
 ## 1. Purpose
 
@@ -77,7 +77,7 @@ Follow these steps in order. Do not skip or reorder them.
 
 Run probe to capture current machine state:
 ```bash
-python3 ${CLAUDE_PLUGIN_DIR}/scripts/probe.py
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/probe.py
 ```
 
 Read the snapshot's `manifest.json`:
@@ -106,7 +106,7 @@ Generate the plan and write it to a deterministic temp path:
 PLAN_ID=$(python3 -c "import uuid; print(uuid.uuid4().hex[:8])")
 PLAN_PATH="/tmp/rehydrate-plan-${PLAN_ID}.json"
 
-python3 ${CLAUDE_PLUGIN_DIR}/scripts/restore-plan.py \
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/restore-plan.py \
     --snapshot <snapshot> \
     --target <target> \
     --out "${PLAN_PATH}"
@@ -186,7 +186,7 @@ Decision logic:
 
 Run restore-apply with `--dry-run`:
 ```bash
-python3 ${CLAUDE_PLUGIN_DIR}/scripts/restore-apply.py \
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/restore-apply.py \
     --plan "${PLAN_PATH}" \
     --snapshot <snapshot> \
     --target <target> \
@@ -209,7 +209,7 @@ If the user cancels: stop and confirm no files were written.
 
 Run restore-apply without `--dry-run`:
 ```bash
-python3 ${CLAUDE_PLUGIN_DIR}/scripts/restore-apply.py \
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/restore-apply.py \
     --plan "${PLAN_PATH}" \
     --snapshot <snapshot> \
     --target <target> \
