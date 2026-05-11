@@ -75,7 +75,6 @@ def _make_home(tmpdir: str) -> tuple[str, dict[str, str]]:
 
 def _make_walk_output(home: str, tmpdir: str) -> str:
     """Build a walk-output JSON describing the home fixture and write it to a temp file."""
-    import stat as stat_mod
 
     files = []
     for rel, is_symlink, symlink_target in [
@@ -255,7 +254,7 @@ class TestSnapshotObjects(unittest.TestCase):
             )
 
     def test_symlink_object_exists(self):
-        target_bytes = "/usr/bin/python3".encode("utf-8")
+        target_bytes = b"/usr/bin/python3"
         digest = _sha256_bytes(target_bytes)
         obj_path = _object_path(self.drive, digest)
         self.assertTrue(
@@ -264,7 +263,7 @@ class TestSnapshotObjects(unittest.TestCase):
         )
 
     def test_symlink_object_content_is_target_string_bytes(self):
-        target_bytes = "/usr/bin/python3".encode("utf-8")
+        target_bytes = b"/usr/bin/python3"
         digest = _sha256_bytes(target_bytes)
         obj_path = _object_path(self.drive, digest)
         with open(obj_path, "rb") as fh:
@@ -275,7 +274,7 @@ class TestSnapshotObjects(unittest.TestCase):
         )
 
     def test_symlink_object_is_regular_file_not_symlink(self):
-        target_bytes = "/usr/bin/python3".encode("utf-8")
+        target_bytes = b"/usr/bin/python3"
         digest = _sha256_bytes(target_bytes)
         obj_path = _object_path(self.drive, digest)
         self.assertFalse(

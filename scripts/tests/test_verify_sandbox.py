@@ -21,7 +21,7 @@ import sys
 import tempfile
 import unittest
 from pathlib import Path
-from unittest.mock import patch, MagicMock
+from unittest.mock import patch
 
 # ---------------------------------------------------------------------------
 # Path setup
@@ -84,7 +84,7 @@ class VerifyFixture:
         self.source_home: Path | None = None
         self._entries: list[dict] = []
 
-    def __enter__(self) -> "VerifyFixture":
+    def __enter__(self) -> VerifyFixture:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.base = Path(self._tmpdir.name)
 

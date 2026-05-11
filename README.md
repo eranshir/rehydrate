@@ -13,7 +13,7 @@ possibly different OS version, possibly years later) can replay against a fresh 
 
 **Development — v0.1 in progress.**
 
-[![CI](placeholder)](.) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![CI](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml/badge.svg)](https://github.com/eranshir/rehydrate/actions/workflows/ci.yml) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 ## What rehydrate does
 

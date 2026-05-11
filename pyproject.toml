@@ -1,0 +1,17 @@
+[tool.ruff]
+target-version = "py310"
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP"]
+# Suppress rules that fire on intentional patterns throughout the codebase:
+#   E402 - sys.path manipulation before imports is intentional in CLI scripts
+#   I001 - import sorting inside try/except blocks and after sys.path inserts
+ignore = ["E402", "I001"]
+
+[tool.ruff.lint.per-file-ignores]
+# Test files: allow long lines (fixture JSON / assertion messages), ambiguous
+# variable names, unused local variables, and unquoted annotations.
+"scripts/tests/*" = ["E501", "E741", "F841"]
+# walk-apps.py has one json.dumps chain that exceeds 100 chars
+"scripts/walk-apps.py" = ["E501"]

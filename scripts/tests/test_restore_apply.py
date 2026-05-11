@@ -160,7 +160,7 @@ class RestoreFixture:
         self.target_dir: Path | None = None
         self._entries: list[dict] = []
 
-    def __enter__(self) -> "RestoreFixture":
+    def __enter__(self) -> RestoreFixture:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.base = Path(self._tmpdir.name)
         # Layout (matches snapshot.py output):
@@ -363,7 +363,7 @@ class TestCreate(unittest.TestCase):
             self.assertEqual(actual_mode, 0o755)
 
     def test_create_file_mtime_set(self):
-        from datetime import datetime, timezone
+        from datetime import datetime
         content = b"timestamped content"
         mtime_str = "2026-04-15T08:30:00Z"
         with RestoreFixture() as fix:

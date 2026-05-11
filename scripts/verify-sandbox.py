@@ -126,7 +126,7 @@ def _make_tempdir() -> Path:
     tmp_root.mkdir(exist_ok=True)
     tempdir = tmp_root / name
     tempdir.mkdir(parents=True, exist_ok=False)
-    log_info(f"Created temp directory for sandbox restore.")
+    log_info("Created temp directory for sandbox restore.")
     log_debug(f"Tempdir: {tempdir}")
     return tempdir
 
@@ -209,7 +209,7 @@ def _check_entry_manifest_vs_restored(
             "expected_hash": expected_hash,
             "actual_hash": None,
         })
-        log_warn(f"Restored file missing.")
+        log_warn("Restored file missing.")
         return "fail"
 
     if is_symlink:
@@ -225,7 +225,7 @@ def _check_entry_manifest_vs_restored(
                 "expected_hash": expected_hash,
                 "actual_hash": actual_hash,
             })
-            log_warn(f"Expected symlink but found regular file.")
+            log_warn("Expected symlink but found regular file.")
             return "fail"
 
         # Compare hash of the link target string.
@@ -238,7 +238,7 @@ def _check_entry_manifest_vs_restored(
                 "expected_hash": expected_hash,
                 "actual_hash": actual_hash,
             })
-            log_warn(f"Symlink target hash mismatch for restored file.")
+            log_warn("Symlink target hash mismatch for restored file.")
             return "fail"
 
         # Also confirm the recorded symlink_target string matches.
@@ -249,7 +249,7 @@ def _check_entry_manifest_vs_restored(
                 "expected_hash": expected_hash,
                 "actual_hash": actual_hash,
             })
-            log_warn(f"Symlink target string mismatch for restored file.")
+            log_warn("Symlink target string mismatch for restored file.")
             return "fail"
 
         return "pass"
@@ -274,7 +274,7 @@ def _check_entry_manifest_vs_restored(
             "expected_hash": expected_hash,
             "actual_hash": actual_hash,
         })
-        log_warn(f"Hash mismatch for restored file vs manifest.")
+        log_warn("Hash mismatch for restored file vs manifest.")
         return "fail"
 
     return "pass"
@@ -297,7 +297,7 @@ def _check_entry_source_vs_manifest(
 
     # Source file no longer exists — record as source-missing, not a failure.
     if not source_path.exists() and not source_path.is_symlink():
-        log_debug(f"Source file not present; skipping source check.")
+        log_debug("Source file not present; skipping source check.")
         return "source-missing"
 
     if is_symlink:
@@ -313,7 +313,7 @@ def _check_entry_source_vs_manifest(
                 "expected_hash": expected_hash,
                 "actual_hash": actual_hash,
             })
-            log_warn(f"Source-vs-manifest: expected symlink but found regular file.")
+            log_warn("Source-vs-manifest: expected symlink but found regular file.")
             return "fail"
 
         actual_target = os.readlink(source_path)
@@ -325,7 +325,7 @@ def _check_entry_source_vs_manifest(
                 "expected_hash": expected_hash,
                 "actual_hash": actual_hash,
             })
-            log_warn(f"Source-vs-manifest: symlink target hash mismatch.")
+            log_warn("Source-vs-manifest: symlink target hash mismatch.")
             return "fail"
         return "pass"
 
@@ -343,7 +343,7 @@ def _check_entry_source_vs_manifest(
             "expected_hash": expected_hash,
             "actual_hash": actual_hash,
         })
-        log_warn(f"Source-vs-manifest: hash mismatch.")
+        log_warn("Source-vs-manifest: hash mismatch.")
         return "fail"
 
     return "pass"
@@ -381,7 +381,7 @@ def _collect_extras(tempdir: Path, manifest_paths: set[str]) -> list[str]:
                 continue
             if rel not in manifest_paths:
                 extras.append(rel)
-                log_warn(f"Extra file in restore target not in manifest.")
+                log_warn("Extra file in restore target not in manifest.")
 
     return sorted(extras)
 
@@ -413,8 +413,7 @@ def _verify(
     skipped = 0
 
     for entry in entries:
-        rel_path: str = entry["path"]
-        log_debug(f"Checking entry.")
+        log_debug("Checking entry.")
 
         # --- Manifest-vs-restored check (always runs) ---
         manifest_result = _check_entry_manifest_vs_restored(entry, tempdir, failures)
@@ -444,7 +443,7 @@ def _verify(
     manifest_paths = {e["path"] for e in entries}
     extras = _collect_extras(tempdir, manifest_paths)
     if extras:
-        log_warn(f"Found extra files in restore target not listed in manifest.")
+        log_warn("Found extra files in restore target not listed in manifest.")
 
     total = len(entries)
     log_count("pass", passed)

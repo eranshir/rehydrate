@@ -1,0 +1,51 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Lint, validate, and test
+    runs-on: macos-14
+    timeout-minutes: 15
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install ruff jsonschema pyyaml
+
+      - name: Lint Python (ruff)
+        run: ruff check scripts/
+
+      - name: Validate categories.yaml
+        run: python3 -c "import yaml; yaml.safe_load(open('categories.yaml'))"
+
+      - name: Validate JSON schemas and sample files
+        run: |
+          python3 -c "
+          import json, jsonschema
+          pairs = [
+              ('schemas/manifest.schema.json',      'examples/sample-manifest.json'),
+              ('schemas/restore-plan.schema.json',   'examples/sample-restore-plan.json'),
+          ]
+          for s, d in pairs:
+              schema = json.load(open(s))
+              doc    = json.load(open(d))
+              jsonschema.validate(doc, schema)
+              print(f'{d} validates against {s}')
+          "
+
+      - name: Run unit tests
+        run: python3 -m unittest discover scripts/tests -b

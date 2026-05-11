@@ -248,7 +248,7 @@ def walk_repos(
             resolved_root = Path(raw_root)
 
         if not resolved_root.is_dir():
-            log_warn(f"root not found, skipping")
+            log_warn("root not found, skipping")
             log_path(resolved_root)
             skipped.append({"path": str(resolved_root), "reason": "root-not-found"})
             continue

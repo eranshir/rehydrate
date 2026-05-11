@@ -14,7 +14,6 @@ Covers:
 import inspect
 import io
 import os
-import re
 import sys
 import tempfile
 import typing
@@ -138,7 +137,7 @@ class TestLogFile(unittest.TestCase):
             with patch.dict(os.environ, env, clear=True), patch("sys.stderr", buf):
                 _mod.log_info("file test message")
 
-            with open(log_path_str, "r", encoding="utf-8") as f:
+            with open(log_path_str, encoding="utf-8") as f:
                 content = f.read()
             self.assertIn("file test message", content)
             self.assertIn("[INFO]", content)
@@ -172,7 +171,7 @@ class TestLogFile(unittest.TestCase):
             env.pop("REHYDRATE_LOG_LEVEL", None)
             with patch.dict(os.environ, env, clear=True), patch("sys.stderr", buf):
                 _mod.log_info("new line")
-            with open(log_path_str, "r", encoding="utf-8") as f:
+            with open(log_path_str, encoding="utf-8") as f:
                 lines = f.readlines()
             self.assertEqual(lines[0].strip(), "existing line")
             self.assertTrue(any("new line" in l for l in lines))

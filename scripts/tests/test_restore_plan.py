@@ -14,7 +14,6 @@ from __future__ import annotations
 import hashlib
 import json
 import os
-import stat
 import sys
 import tempfile
 import unittest
@@ -125,7 +124,7 @@ class SnapshotFixture:
         self.snapshot_dir: Path | None = None
         self.target_dir: Path | None = None
 
-    def __enter__(self) -> "SnapshotFixture":
+    def __enter__(self) -> SnapshotFixture:
         self._tmpdir = tempfile.TemporaryDirectory()
         base = Path(self._tmpdir.name)
         self.snapshot_dir = base / "snapshot"

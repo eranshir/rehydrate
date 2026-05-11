@@ -7,14 +7,11 @@ no real package managers need to be installed.
 
 from __future__ import annotations
 
-import io
 import json
-import os
 import shutil
 import subprocess
 import sys
 import tempfile
-import textwrap
 import unittest
 from pathlib import Path
 from unittest.mock import MagicMock, patch

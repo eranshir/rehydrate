@@ -233,7 +233,7 @@ def _check_target_safety(target: Path, live: bool) -> None:
     try:
         resolved.relative_to(library_dir)
         # If we get here, target is inside ~/Library.
-        log_error(f"Refusing to restore into ~/Library (system-managed).")
+        log_error("Refusing to restore into ~/Library (system-managed).")
         raise _FatalError(
             f"Target {target} is inside ~/Library which is system-managed."
         )
@@ -399,11 +399,11 @@ def _write_symlink(
 def _parse_mtime(mtime_str: str) -> float | None:
     """Parse an ISO 8601 UTC mtime string to a POSIX timestamp, or None."""
     try:
-        from datetime import datetime, timezone
+        from datetime import datetime
         dt = datetime.fromisoformat(mtime_str.replace("Z", "+00:00"))
         return dt.timestamp()
     except (ValueError, AttributeError):
-        log_warn(f"Could not parse mtime string, skipping mtime restore.")
+        log_warn("Could not parse mtime string, skipping mtime restore.")
         return None
 
 

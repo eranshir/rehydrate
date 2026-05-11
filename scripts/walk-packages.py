@@ -280,7 +280,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.workdir is None:
         workdir = tempfile.mkdtemp(prefix="rehydrate-packages-")
-        log_info(f"created workdir")
+        log_info("created workdir")
     else:
         workdir = args.workdir
         Path(workdir).mkdir(parents=True, exist_ok=True)
@@ -291,7 +291,7 @@ def main(argv: list[str] | None = None) -> None:
 
     if args.out:
         Path(args.out).write_text(output, encoding="utf-8")
-        log_info(f"output written")
+        log_info("output written")
     else:
         print(output)
 

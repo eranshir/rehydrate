@@ -131,7 +131,7 @@ def _git_remote_url(child: Path) -> str:
             return proc.stdout.decode("utf-8", errors="replace").strip()
         return ""
     except subprocess.TimeoutExpired:
-        log_warn(f"git config --get remote.origin.url timed out")
+        log_warn("git config --get remote.origin.url timed out")
         return ""
     except FileNotFoundError:
         log_warn("git not found on PATH")
@@ -248,7 +248,7 @@ def _capture_project(
             try:
                 st = os.lstat(str(abs_file))
             except PermissionError:
-                log_warn(f"permission denied reading file in project")
+                log_warn("permission denied reading file in project")
                 skipped_entries.append({
                     "path": relpath_str,
                     "project": project_name,
@@ -308,7 +308,7 @@ def _capture_project(
                 try:
                     shutil.copy2(str(abs_file), str(dest_file))
                 except PermissionError:
-                    log_warn(f"permission denied copying file")
+                    log_warn("permission denied copying file")
                     skipped_entries.append({
                         "path": relpath_str,
                         "project": project_name,
@@ -380,7 +380,6 @@ def walk_fullsnap(
     all_files: list[dict[str, Any]] = []
     all_skipped: list[dict[str, Any]] = []
     excluded_file_count = 0
-    excluded_dir_count = 0
 
     for raw_root in roots:
         # Resolve ~/

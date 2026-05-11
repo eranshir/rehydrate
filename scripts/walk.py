@@ -57,7 +57,7 @@ def _load_category(categories_path: str, category_name: str) -> dict[str, Any]:
     """Load and return the named category dict; exit on error."""
     path = Path(categories_path)
     if not path.exists():
-        log_error(f"categories file not found", path=path)
+        log_error("categories file not found", path=path)
         sys.exit(1)
 
     with path.open(encoding="utf-8") as fh:

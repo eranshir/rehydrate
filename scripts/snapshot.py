@@ -26,7 +26,6 @@ import os
 import re
 import shutil
 import sys
-import tempfile
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -40,7 +39,6 @@ from scripts.no_pii_log import (  # noqa: E402
     log_count,
     log_debug,
     log_error,
-    log_hash,
     log_info,
     log_path,
     log_warn,
