@@ -336,7 +336,55 @@ inventory as a checklist and let the user or a restore-time LLM work through it.
 
 ---
 
-## 10. Post-restore: Refreshing macOS Preferences (`defaults` category)
+## 10. Post-restore: Re-cloning Git Repositories (`dev-projects` category)
+
+After restoring the `dev-projects` category, the captured inventory lives at
+`<target>/.rehydrate/projects/inventory.json`. Each entry contains `name`,
+`path`, `remote_url`, `branch`, `head_sha`, and `captured_secrets` (a list
+of relative paths). Restoration is intentionally user-mediated: no automated
+`git clone` is performed — the skill presents instructions for you to execute.
+
+**Step 1 — Clone each repo.** For each entry in the inventory, clone the repo
+to your preferred local path. The original `path` field is recorded as a
+default suggestion (e.g. `~/Documents/Projects/<name>`):
+
+```bash
+git clone <remote_url> ~/Documents/Projects/<name>
+# Optionally, check out the exact snapshot commit:
+# git -C ~/Documents/Projects/<name> checkout <head_sha>
+```
+
+The `head_sha` checkout is recommended only if you want snapshot-as-time-machine
+semantics (pinned to the exact commit at backup time). For normal day-to-day
+restore, clone the default branch and pull from the remote to get the latest code.
+
+**Step 2 — Copy captured secrets back.** After cloning, drop the captured
+secret files into each repo's working tree, preserving their relative paths:
+
+```bash
+cp -R <target>/.rehydrate/projects/<name>/. ~/Documents/Projects/<name>/
+```
+
+This recursively copies `.env`, `*.p8`, `credentials.json`, and any other
+files that were captured. The destination repo's `.gitignore` will continue
+to exclude them from commits.
+
+> **WARNING — API keys may have been rotated since the backup.**
+> Review every restored secret file before using it. Treat `.env`,
+> `.p8`, `credentials.json`, and similar files as starting points, not as
+> guaranteed-valid credentials. Any secrets that reference external services
+> (database URLs, API tokens, OAuth keys) should be verified against the
+> issuing service before you rely on them.
+
+**Step 3 — Repos with no remote (local-only-projects).** If the backup also
+includes a `local-only-projects` category, those repos were captured via a
+different strategy (`full-snapshot`, issue #20) and are restored from a
+complete file tree, not via `git clone`. Check that category's inventory
+separately.
+
+---
+
+## 11. Post-restore: Refreshing macOS Preferences (`defaults` category)
 
 If the restored snapshot included the `defaults` category, the plist files in
 `~/Library/Preferences/` will have been written to disk, but the macOS preferences

@@ -159,7 +159,7 @@ categories:
     iCloud_managed: false
 
   - name: dev-projects
-    enabled: false
+    enabled: true
     strategy: repo-list
     description: Git repos with remotes — capture remote URLs + gitignored secrets, clone on restore
     roots:
