@@ -287,6 +287,8 @@ better than no state for large restores).
 No manual cleanup is needed before retrying. The plan is always recomputed from the
 current state of the target directory, not from a checkpoint file.
 
+> **Note:** GC (`snapshot-gc.py`) is a separate operation. It is never run as part of restore.
+
 ---
 
 ## 8. Post-restore: Re-installing Packages (`package-managers` category)

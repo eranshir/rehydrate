@@ -11,6 +11,7 @@ allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-repos.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-fullsnap.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot-gc.py *)
   - Bash(ls -1 *)
   - Bash(ls *)
   - Bash(mkdir *)
@@ -341,3 +342,9 @@ If the backup is interrupted mid-run:
 - Objects in `<drive_path>/llm-backup/objects/` written so far are valid and will be deduped on the next run.
 - To retry: delete `<SNAPSHOT_DIR>` entirely and run `/rehydrate:backup` again. The object store preserves any objects already copied, so the retry is fast.
 - Do not attempt to resume a partial snapshot. `snapshot.py` refuses to write into an existing snapshot directory.
+
+### Step 7 — Optional GC suggestion
+
+Count existing snapshots: `ls <drive>/llm-backup/snapshots/ | wc -l`. If > 10:
+suggest the user run `snapshot-gc.py --keep-last 10` to prune older snapshots.
+Do NOT auto-run GC. Ask for explicit confirmation before invoking.
