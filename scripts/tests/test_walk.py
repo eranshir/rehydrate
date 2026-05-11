@@ -727,6 +727,150 @@ class TestNewlyEnabledCategories(unittest.TestCase):
         self.assertEqual(result["category"], "custom-content")
 
 
+class TestDefaultsCategory(unittest.TestCase):
+    """
+    Tests for the defaults category (Phase 3.2 / issue #16).
+
+    Uses a fixture HOME that mirrors ~/Library/Preferences/ so the walk
+    machinery can be tested without touching the real machine.
+    """
+
+    def setUp(self):
+        self._tmpdir_obj = tempfile.TemporaryDirectory()
+        self.tmpdir = self._tmpdir_obj.name
+        prefs_dir = os.path.join(self.tmpdir, "Library", "Preferences")
+        os.makedirs(prefs_dir, exist_ok=True)
+
+        # Plists that must be captured
+        for fname in (
+            ".GlobalPreferences.plist",
+            "com.apple.dock.plist",
+            "com.apple.finder.plist",
+        ):
+            _write(os.path.join(prefs_dir, fname), "bplist00\x00" * 4)
+
+        # A file inside a subdirectory — ByHost/ is NOT in any glob; must not appear
+        byhost_dir = os.path.join(prefs_dir, "ByHost")
+        os.makedirs(byhost_dir, exist_ok=True)
+        _write(os.path.join(byhost_dir, "com.apple.networkinterfaces.plist"), "bplist00\x00")
+
+        # .DS_Store in Preferences/ — must be excluded
+        _write(os.path.join(prefs_dir, ".DS_Store"), "junk")
+
+        self.category = {
+            "name": "defaults",
+            "enabled": True,
+            "strategy": "file-list",
+            "description": "macOS user-domain preferences plists",
+            "globs": [
+                "~/Library/Preferences/.GlobalPreferences.plist",
+                "~/Library/Preferences/com.apple.dock.plist",
+                "~/Library/Preferences/com.apple.finder.plist",
+                "~/Library/Preferences/com.apple.menuextra.clock.plist",
+                "~/Library/Preferences/com.apple.systempreferences.plist",
+                "~/Library/Preferences/com.apple.symbolichotkeys.plist",
+                "~/Library/Preferences/com.apple.Terminal.plist",
+                "~/Library/Preferences/com.googlecode.iterm2.plist",
+            ],
+            "exclude": ["**/.DS_Store"],
+        }
+
+    def tearDown(self):
+        self._tmpdir_obj.cleanup()
+
+    def _result(self):
+        return walk_category(self.category, home=self.tmpdir)
+
+    def _rel_paths(self, result):
+        return {f["path"] for f in result["files"]}
+
+    # ------------------------------------------------------------------
+    # Core plists are captured with correct relative paths
+    # ------------------------------------------------------------------
+
+    def test_global_preferences_captured(self):
+        paths = self._rel_paths(self._result())
+        self.assertIn("Library/Preferences/.GlobalPreferences.plist", paths)
+
+    def test_dock_plist_captured(self):
+        paths = self._rel_paths(self._result())
+        self.assertIn("Library/Preferences/com.apple.dock.plist", paths)
+
+    def test_finder_plist_captured(self):
+        paths = self._rel_paths(self._result())
+        self.assertIn("Library/Preferences/com.apple.finder.plist", paths)
+
+    def test_all_paths_under_library_preferences(self):
+        """Every captured path must start with Library/Preferences/."""
+        result = self._result()
+        for entry in result["files"]:
+            self.assertTrue(
+                entry["path"].startswith("Library/Preferences/"),
+                f"Unexpected path outside Library/Preferences/: {entry['path']}",
+            )
+
+    def test_paths_are_relative_not_absolute(self):
+        """Captured paths must not start with /."""
+        result = self._result()
+        for entry in result["files"]:
+            self.assertFalse(
+                entry["path"].startswith("/"),
+                f"Path must be relative, got: {entry['path']}",
+            )
+
+    # ------------------------------------------------------------------
+    # ByHost/ subdirectory is NOT captured (no glob matches it)
+    # ------------------------------------------------------------------
+
+    def test_byhost_not_captured(self):
+        paths = self._rel_paths(self._result())
+        byhost_paths = [p for p in paths if "ByHost" in p]
+        self.assertEqual(
+            byhost_paths,
+            [],
+            "ByHost/ files must not be captured — no glob targets that subdirectory",
+        )
+
+    # ------------------------------------------------------------------
+    # .DS_Store is excluded
+    # ------------------------------------------------------------------
+
+    def test_ds_store_excluded(self):
+        paths = self._rel_paths(self._result())
+        self.assertNotIn(
+            "Library/Preferences/.DS_Store",
+            paths,
+            ".DS_Store inside Preferences/ must be excluded",
+        )
+
+    # ------------------------------------------------------------------
+    # File mode is captured
+    # ------------------------------------------------------------------
+
+    def test_mode_captured(self):
+        """Each captured plist entry must have a 4-digit octal mode string."""
+        result = self._result()
+        for entry in result["files"]:
+            self.assertRegex(
+                entry["mode"],
+                r"^[0-7]{4}$",
+                f"mode must be 4-digit octal, got: {entry['mode']} for {entry['path']}",
+            )
+
+    # ------------------------------------------------------------------
+    # Plists that don't exist on the fixture are absent but not errors
+    # ------------------------------------------------------------------
+
+    def test_missing_optional_plists_not_errors(self):
+        """Globs for plists not present in the fixture return 0 matches — no crash."""
+        result = self._result()
+        # com.apple.menuextra.clock.plist was not written in setUp
+        paths = self._rel_paths(result)
+        self.assertNotIn("Library/Preferences/com.apple.menuextra.clock.plist", paths)
+        # Walk must still complete successfully — verify via category field
+        self.assertEqual(result["category"], "defaults")
+
+
 class TestHelpers(unittest.TestCase):
     """Unit tests for internal helper functions."""
 

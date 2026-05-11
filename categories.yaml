@@ -78,14 +78,20 @@ categories:
     iCloud_managed: false
 
   - name: defaults
-    enabled: false
-    strategy: defaults-domains  # captures `defaults read <domain>` for an allow-list of domains
-    description: macOS user-domain preferences for Dock, Finder, NSGlobalDomain, etc.
-    domains:
-      - NSGlobalDomain
-      - com.apple.dock
-      - com.apple.finder
-      - com.apple.menuextra.clock
+    enabled: true
+    strategy: file-list
+    description: macOS user-domain preferences (Dock, Finder, NSGlobalDomain, etc.) captured directly from ~/Library/Preferences/ plist files. Restoring may require `killall cfprefsd` for the macOS preferences daemon to pick up changes.
+    globs:
+      - ~/Library/Preferences/.GlobalPreferences.plist
+      - ~/Library/Preferences/com.apple.dock.plist
+      - ~/Library/Preferences/com.apple.finder.plist
+      - ~/Library/Preferences/com.apple.menuextra.clock.plist
+      - ~/Library/Preferences/com.apple.systempreferences.plist
+      - ~/Library/Preferences/com.apple.symbolichotkeys.plist
+      - ~/Library/Preferences/com.apple.Terminal.plist
+      - ~/Library/Preferences/com.googlecode.iterm2.plist
+    exclude:
+      - "**/.DS_Store"
     iCloud_managed: false
 
   - name: browser-profiles

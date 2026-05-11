@@ -286,3 +286,15 @@ better than no state for large restores).
 
 No manual cleanup is needed before retrying. The plan is always recomputed from the
 current state of the target directory, not from a checkpoint file.
+
+---
+
+## 8. Post-restore: Refreshing macOS Preferences (`defaults` category)
+
+If the restored snapshot included the `defaults` category, the plist files in
+`~/Library/Preferences/` will have been written to disk, but the macOS preferences
+daemon (`cfprefsd`) caches them in memory and may not notice the change immediately.
+After a restore that touches any `Library/Preferences/*.plist` file, run
+`killall cfprefsd` to force the daemon to reload from disk, or log out and back in.
+Apps that were already open (Finder, Dock, System Settings) should be restarted
+afterwards so they pick up the refreshed preferences.
