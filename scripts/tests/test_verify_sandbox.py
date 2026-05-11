@@ -88,13 +88,13 @@ class VerifyFixture:
         self._tmpdir = tempfile.TemporaryDirectory()
         self.base = Path(self._tmpdir.name)
 
-        # Drive tree:
+        # Drive tree (matches snapshot.py output):
         #   <base>/drive/snapshots/<id>/  ← snapshot_dir
-        #   <base>/drive/snapshots/objects/ ← objects_dir (<snap>/../objects)
+        #   <base>/drive/objects/         ← objects_dir (<snap>/../../objects)
         self.drive = self.base / "drive"
         self.snapshot_dir = self.drive / "snapshots" / self.SNAPSHOT_ID
         self.snapshot_dir.mkdir(parents=True)
-        self.objects_dir = self.drive / "snapshots" / "objects"
+        self.objects_dir = self.drive / "objects"
         self.objects_dir.mkdir(parents=True)
 
         # Source home.
