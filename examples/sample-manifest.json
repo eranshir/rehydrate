@@ -1,0 +1,62 @@
+{
+  "schema_version": "0.1.0",
+  "created_at": "2026-05-11T12:00:00Z",
+  "snapshot_id": "MacBook-Pro-35.local-2026-05-11T120000Z",
+  "source_machine": {
+    "os": "macOS",
+    "os_version": "26.0",
+    "build": "25A5295e",
+    "hostname": "MacBook-Pro-35.local",
+    "user": "eranshir",
+    "hardware": {
+      "arch": "arm64",
+      "model": "MacBookPro18,3",
+      "memory_bytes": 34359738368
+    },
+    "shell": "/bin/zsh",
+    "path": [
+      "/opt/homebrew/bin",
+      "/opt/homebrew/sbin",
+      "/usr/local/bin",
+      "/usr/bin",
+      "/bin",
+      "/usr/sbin",
+      "/sbin"
+    ]
+  },
+  "parent_snapshot": null,
+  "categories": {
+    "dotfiles": {
+      "strategy": "file-list",
+      "files": [
+        {
+          "path": ".zshrc",
+          "object_hash": "a3f1e2d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2",
+          "mode": "0644",
+          "mtime": "2026-04-15T08:30:00Z",
+          "size": 3712,
+          "is_symlink": false,
+          "symlink_target": null
+        },
+        {
+          "path": ".gitconfig",
+          "object_hash": "b7c2d3e4f5a6b7c8d9e0f1a2b3c4d5e6f7a8b9c0d1e2f3a4b5c6d7e8f9a0b1c2",
+          "mode": "0644",
+          "mtime": "2026-03-22T14:05:00Z",
+          "size": 512,
+          "is_symlink": false,
+          "symlink_target": null
+        },
+        {
+          "path": ".local/bin/python3",
+          "object_hash": "c9d4e5f6a7b8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1b2c3d4",
+          "mode": "0777",
+          "mtime": "2026-01-10T11:00:00Z",
+          "size": 0,
+          "is_symlink": true,
+          "symlink_target": "/opt/homebrew/bin/python3"
+        }
+      ]
+    }
+  }
+}

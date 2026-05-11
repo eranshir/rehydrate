@@ -1,0 +1,210 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://github.com/eranshir/rehydrate/schemas/manifest.schema.json",
+  "title": "rehydrate manifest",
+  "description": "Machine-readable snapshot manifest emitted by the backup process and consumed by the restore process.",
+  "type": "object",
+  "required": [
+    "schema_version",
+    "created_at",
+    "snapshot_id",
+    "source_machine",
+    "parent_snapshot",
+    "categories"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "schema_version": {
+      "type": "string",
+      "description": "Semver version of this schema. Additive changes bump the minor version; breaking changes bump the major version.",
+      "pattern": "^(0|[1-9]\\d*)\\.(0|[1-9]\\d*)\\.(0|[1-9]\\d*)(?:-((?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*)(?:\\.(?:0|[1-9]\\d*|\\d*[a-zA-Z-][0-9a-zA-Z-]*))*))?(?:\\+([0-9a-zA-Z-]+(?:\\.[0-9a-zA-Z-]+)*))?$",
+      "examples": ["0.1.0"]
+    },
+    "created_at": {
+      "type": "string",
+      "description": "ISO 8601 UTC timestamp at which this snapshot was created.",
+      "format": "date-time",
+      "examples": ["2026-05-11T12:00:00Z"]
+    },
+    "snapshot_id": {
+      "type": "string",
+      "description": "Unique identifier for this snapshot, typically '<hostname>-<created_at>' with colons stripped.",
+      "minLength": 1,
+      "examples": ["MacBook-Pro-35.local-2026-05-11T120000Z"]
+    },
+    "source_machine": {
+      "type": "object",
+      "description": "Properties of the machine that produced this snapshot.",
+      "required": ["os", "os_version", "build", "hostname", "user", "hardware", "shell", "path"],
+      "additionalProperties": false,
+      "properties": {
+        "os": {
+          "type": "string",
+          "description": "Operating system name.",
+          "examples": ["macOS"]
+        },
+        "os_version": {
+          "type": "string",
+          "description": "Human-readable OS version string.",
+          "examples": ["26.0"]
+        },
+        "build": {
+          "type": "string",
+          "description": "OS build identifier.",
+          "examples": ["25A5295e"]
+        },
+        "hostname": {
+          "type": "string",
+          "description": "Machine hostname.",
+          "examples": ["MacBook-Pro-35.local"]
+        },
+        "user": {
+          "type": "string",
+          "description": "Unix username that ran the backup.",
+          "examples": ["eranshir"]
+        },
+        "hardware": {
+          "type": "object",
+          "description": "Hardware properties.",
+          "required": ["arch", "model", "memory_bytes"],
+          "additionalProperties": false,
+          "properties": {
+            "arch": {
+              "type": "string",
+              "description": "CPU architecture.",
+              "examples": ["arm64", "x86_64"]
+            },
+            "model": {
+              "type": "string",
+              "description": "Hardware model identifier.",
+              "examples": ["MacBookPro18,3"]
+            },
+            "memory_bytes": {
+              "type": "integer",
+              "description": "Total physical memory in bytes.",
+              "minimum": 0,
+              "examples": [34359738368]
+            }
+          }
+        },
+        "shell": {
+          "type": "string",
+          "description": "Default login shell path.",
+          "examples": ["/bin/zsh"]
+        },
+        "path": {
+          "type": "array",
+          "description": "Ordered PATH entries at backup time.",
+          "items": {
+            "type": "string"
+          },
+          "examples": [["/usr/local/bin", "/usr/bin", "/bin"]]
+        }
+      }
+    },
+    "parent_snapshot": {
+      "type": ["string", "null"],
+      "description": "snapshot_id of the immediately preceding snapshot in an incremental chain. Null for full snapshots (all v0.1 snapshots are full).",
+      "examples": [null]
+    },
+    "categories": {
+      "type": "object",
+      "description": "Map of category name to category payload. Known categories are typed via $defs; unknown categories are permitted to allow forward compatibility.",
+      "properties": {
+        "dotfiles": {
+          "$ref": "#/$defs/dotfiles_category"
+        }
+      },
+      "patternProperties": {
+        "^[a-z][a-z0-9_-]*$": {
+          "type": "object",
+          "description": "Unknown future category. Must be an object with at minimum a 'strategy' discriminator.",
+          "required": ["strategy"],
+          "properties": {
+            "strategy": {
+              "type": "string",
+              "description": "Discriminator identifying how the restore process should interpret this category's payload."
+            }
+          }
+        }
+      }
+    }
+  },
+  "$defs": {
+    "dotfiles_category": {
+      "type": "object",
+      "description": "Dotfiles category payload: a flat list of files captured from $HOME.",
+      "required": ["strategy", "files"],
+      "additionalProperties": false,
+      "properties": {
+        "strategy": {
+          "type": "string",
+          "const": "file-list",
+          "description": "Discriminator value for the dotfiles category."
+        },
+        "files": {
+          "type": "array",
+          "description": "Ordered list of captured dotfile entries.",
+          "items": {
+            "$ref": "#/$defs/file_entry"
+          }
+        }
+      }
+    },
+    "file_entry": {
+      "type": "object",
+      "description": "A single captured file or symlink.",
+      "required": [
+        "path",
+        "object_hash",
+        "mode",
+        "mtime",
+        "size",
+        "is_symlink",
+        "symlink_target"
+      ],
+      "additionalProperties": false,
+      "properties": {
+        "path": {
+          "type": "string",
+          "description": "File path relative to $HOME. Must not start with '/'.",
+          "pattern": "^[^/]",
+          "examples": [".zshrc", ".gitconfig", ".config/nvim/init.lua"]
+        },
+        "object_hash": {
+          "type": "string",
+          "description": "SHA-256 hex digest of the file's contents (64 lowercase hex characters). For symlinks this is the hash of the link target string.",
+          "pattern": "^[0-9a-f]{64}$",
+          "examples": ["a3f1e2d4c5b6a7f8e9d0c1b2a3f4e5d6c7b8a9f0e1d2c3b4a5f6e7d8c9b0a1f2"]
+        },
+        "mode": {
+          "type": "string",
+          "description": "POSIX file mode as a 4-digit octal string.",
+          "pattern": "^[0-7]{4}$",
+          "examples": ["0644", "0755", "0600"]
+        },
+        "mtime": {
+          "type": "string",
+          "description": "File modification time as ISO 8601 UTC.",
+          "format": "date-time",
+          "examples": ["2026-04-01T09:15:00Z"]
+        },
+        "size": {
+          "type": "integer",
+          "description": "File size in bytes. 0 for symlinks (the content is the target string, not the resolved file).",
+          "minimum": 0,
+          "examples": [2048]
+        },
+        "is_symlink": {
+          "type": "boolean",
+          "description": "True if the entry is a symbolic link rather than a regular file."
+        },
+        "symlink_target": {
+          "type": ["string", "null"],
+          "description": "Symlink target path (may be relative or absolute). Null when is_symlink is false.",
+          "examples": ["/opt/homebrew/bin/python3", null]
+        }
+      }
+    }
+  }
+}
