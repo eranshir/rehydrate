@@ -9,6 +9,7 @@ allowed-tools:
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-packages.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-apps.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-repos.py *)
+  - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-fullsnap.py *)
   - Bash(python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py *)
   - Bash(ls *)
   - Bash(mkdir *)
@@ -118,7 +119,7 @@ matching walker:
 | package-list  | scripts/walk-packages.py                             |
 | app-list      | scripts/walk-apps.py                                 |
 | repo-list     | scripts/walk-repos.py                                |
-| full-snapshot | (added in #20)                                       |
+| full-snapshot | scripts/walk-fullsnap.py                             |
 
 #### Per-category walk commands
 
@@ -186,8 +187,21 @@ workdir rather than `$HOME`.
 
 **strategy: full-snapshot**
 
-No walker is implemented yet. Warn the user and skip this category:
-> "Skipping category '<name>' (strategy: full-snapshot) — walker not implemented yet (see issue #20)."
+Full-snapshot walkers copy the complete file tree of each local-only project
+directory into a dedicated workdir, not into `$HOME`. Choose a stable workdir
+path per category (e.g. under `<SNAPSHOT_DIR>/workdirs/<name>/`):
+
+```bash
+mkdir -p <SNAPSHOT_DIR>/workdirs/<name>
+
+python3 ${CLAUDE_SKILL_DIR}/../../scripts/walk-fullsnap.py \
+  --out <SNAPSHOT_DIR>/walk-<name>.json \
+  --workdir <SNAPSHOT_DIR>/workdirs/<name>
+```
+
+The JSON output's `workdir` field will confirm the path. Pass it as `--home`
+to `snapshot.py` in Step 4 so the virtual paths resolve correctly against the
+workdir rather than `$HOME`.
 
 #### Verify walk output
 
@@ -200,9 +214,9 @@ If you need to enumerate enabled categories dynamically, read
 ### Step 4 — Run snapshot.py
 
 For each enabled category that was walked, pass `--walk-output` and `--category`
-to `snapshot.py`. For `package-list`, `app-list`, and `repo-list` categories,
-also pass `--home <workdir>` (use the `workdir` from the walk JSON); for all
-other strategies pass `--home $HOME`.
+to `snapshot.py`. For `package-list`, `app-list`, `repo-list`, and
+`full-snapshot` categories, also pass `--home <workdir>` (use the `workdir`
+from the walk JSON); for all other strategies pass `--home $HOME`.
 
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/../../scripts/snapshot.py \

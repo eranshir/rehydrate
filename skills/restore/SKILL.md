@@ -384,7 +384,53 @@ separately.
 
 ---
 
-## 11. Post-restore: Refreshing macOS Preferences (`defaults` category)
+## 11. Post-restore: Recovering Local-Only Projects (`local-only-projects` category)
+
+After restoring the `local-only-projects` category, captured project trees live
+at `<target>/.rehydrate/projects-local/<name>/...` and the inventory lives at
+`<target>/.rehydrate/projects-local/inventory.json`.
+
+Each inventory entry contains `name`, `original_path`, `file_count`,
+`total_bytes`, and `included_reason` (`"no-git"` or `"git-no-remote"`).
+
+**Step 1 — Review the inventory.** Read the inventory to identify which
+projects were captured and where they originally lived:
+
+```bash
+cat <target>/.rehydrate/projects-local/inventory.json
+```
+
+**Step 2 — Move projects to their final destinations.** The simplest recovery
+is to move each project directory to its original location. For example, to
+restore all projects under `~/Documents/Projects/`:
+
+```bash
+mv <target>/.rehydrate/projects-local/<name> ~/Documents/Projects/<name>
+```
+
+Or to move all captured projects at once:
+
+```bash
+mv <target>/.rehydrate/projects-local/* ~/Documents/Projects/
+```
+
+The `inventory.json` file itself is informational — you can delete it after
+recovery or keep it as a reference. It will not interfere with `mv`.
+
+**Step 3 — Re-initialise git if needed.** Projects with `included_reason:
+"git-no-remote"` had a local git repo but no upstream. After moving the files,
+you can re-init git in the destination or continue without version control.
+Projects with `included_reason: "no-git"` had no git repo at all; create one
+if desired:
+
+```bash
+cd ~/Documents/Projects/<name>
+git init && git add -A && git commit -m "Restored from rehydrate snapshot"
+```
+
+---
+
+## 12. Post-restore: Refreshing macOS Preferences (`defaults` category)
 
 If the restored snapshot included the `defaults` category, the plist files in
 `~/Library/Preferences/` will have been written to disk, but the macOS preferences

@@ -169,7 +169,7 @@ categories:
     iCloud_managed: false
 
   - name: local-only-projects
-    enabled: false
+    enabled: true
     strategy: full-snapshot
     description: Project directories that have no git remote — capture full contents (minus venvs/node_modules)
     roots:
