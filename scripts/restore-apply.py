@@ -507,7 +507,7 @@ def _parse_args(argv: list[str] | None = None) -> argparse.Namespace:
         metavar="PATH",
         help=(
             "Path to the snapshot directory containing manifest.json. "
-            "The objects/ store is at <snapshot>/../objects/."
+            "The objects/ store is at <drive>/objects/ (two levels up)."
         ),
     )
     parser.add_argument(
@@ -587,8 +587,9 @@ def main(argv: list[str] | None = None) -> int:
         # ---------------------
         # Locate objects store.
         # ---------------------
-        # Convention: <snapshot>/../objects/
-        objects_dir = (snapshot_dir / ".." / "objects").resolve()
+        # Drive layout: <drive>/objects/ and <drive>/snapshots/<id>/, so the
+        # objects dir is two levels up from a snapshot dir.
+        objects_dir = (snapshot_dir / ".." / ".." / "objects").resolve()
         log_debug(f"Objects dir: {objects_dir}")
         if not objects_dir.is_dir():
             log_error("Objects directory not found.", path=objects_dir)

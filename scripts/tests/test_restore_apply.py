@@ -163,13 +163,13 @@ class RestoreFixture:
     def __enter__(self) -> "RestoreFixture":
         self._tmpdir = tempfile.TemporaryDirectory()
         self.base = Path(self._tmpdir.name)
-        # Layout:
+        # Layout (matches snapshot.py output):
         #   <base>/snapshots/test-snap-001/  ← snapshot_dir (contains manifest.json)
-        #   <base>/snapshots/objects/        ← objects_dir  (<snapshot>/../objects)
+        #   <base>/objects/                  ← objects_dir  (<snapshot>/../../objects)
         #   <base>/target/                   ← target_dir
         self.snapshot_dir = self.base / "snapshots" / "test-snap-001"
         self.snapshot_dir.mkdir(parents=True)
-        self.objects_dir = self.base / "snapshots" / "objects"
+        self.objects_dir = self.base / "objects"
         self.objects_dir.mkdir(parents=True)
         self.target_dir = self.base / "target"
         self.target_dir.mkdir()
@@ -577,8 +577,8 @@ class TestRefusalRules(unittest.TestCase):
         snap_dir.mkdir(parents=True, exist_ok=True)
         manifest = _make_manifest([])
         (snap_dir / "manifest.json").write_text(json.dumps(manifest))
-        # objects/ must be at <snapshot>/../objects = <base>/snapshots/objects
-        objects_dir = base / "snapshots" / "objects"
+        # objects/ is at <drive>/objects, i.e. <snapshot>/../../objects
+        objects_dir = base / "objects"
         objects_dir.mkdir(exist_ok=True)
         return snap_dir
 
